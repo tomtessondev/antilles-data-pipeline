@@ -3,12 +3,12 @@ with weather as (
 ),
 
 locations as (
-    select * from {{ source('raw', 'locations') }}
+    select * from {{ ref('stg_locations') }}
 )
 
 select
     weather.location_code,
-    locations.name                         as town,
+    locations.town,
     locations.territory,
     weather.observed_at,
     cast(weather.observed_at as date)      as observed_date,

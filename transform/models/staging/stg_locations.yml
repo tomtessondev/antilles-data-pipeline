@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: stg_locations
+    description: Towns tracked by the pipeline, renamed for downstream models.
+    columns:
+      - name: location_code
+        data_tests: [unique, not_null]

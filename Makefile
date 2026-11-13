@@ -1,4 +1,4 @@
-.PHONY: install lint typecheck test check run fixture transform docs clean
+.PHONY: install lint typecheck test check run fixture transform freshness docs clean
 
 install:
 	pip install -e ".[dev,transform]"
@@ -23,6 +23,9 @@ fixture:
 
 transform:
 	cd transform && dbt build --profiles-dir .
+
+freshness:
+	cd transform && dbt source freshness --profiles-dir .
 
 docs:
 	cd transform && dbt docs generate --profiles-dir .

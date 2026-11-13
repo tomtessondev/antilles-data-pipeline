@@ -2,13 +2,24 @@ version: 2
 
 models:
   - name: fct_daily_weather
-    description: One row per town and day, ready for a dashboard.
+    description: >
+      One row per town and day, ready for a dashboard. Incremental: each run rebuilds only
+      the days that received new hourly rows. Join to dim_location for town names.
     columns:
       - name: location_code
-        data_tests: [not_null]
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_location')
+                field: location_code
       - name: observed_date
         data_tests: [not_null]
       - name: hours_observed
+        description: Hours aggregated for the day; below 24 for the current, partial day.
         data_tests: [not_null]
       - name: rain_total_mm
+        data_tests: [not_null]
+      - name: last_extracted_at
+        description: Latest extraction (UTC) that contributed to the row; drives incremental runs.
         data_tests: [not_null]
