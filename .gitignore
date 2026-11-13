@@ -19,3 +19,4 @@ transform/logs/
 logs/
 .user.yml
 .gstack/
+.tmp_dagster_home_*/

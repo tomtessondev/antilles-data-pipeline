@@ -15,7 +15,9 @@ more than feature count. Every change should be something a recruiter can read.
   - `config.py`: towns and settings (env: `ANTILLES_DB_PATH`, `ANTILLES_WEATHER_API`,
     `ANTILLES_AIR_QUALITY_API`)
   - `extract.py`: Open-Meteo hourly weather and air quality, httpx + tenacity retries
-  - `load.py`: idempotent upserts into DuckDB schema `raw`
+  - `lake.py`: append-only Parquet landing zone (`ANTILLES_LAKE_URL`, local dir or s3://),
+    Hive-partitioned by `extracted_date`; raw tables are rebuilt from it, latest wins
+  - `load.py`: DuckDB schema `raw` (DDL, locations, direct upserts used by the fixture loader)
   - `export.py`: marts to one JSON document for the dashboard
   - `cli.py`: typer CLI `antilles-pipeline run` and `antilles-pipeline export`
   - `orchestration/`: Dagster assets (raw tables keyed like the dbt sources, dbt models via
@@ -29,7 +31,9 @@ more than feature count. Every change should be something a recruiter can read.
   real API, publishes `marts.json` to the `data` branch) and `docs.yml` (dbt docs on
   fixture data, deployed to GitHub Pages from `main`)
 - Multi-stage Dockerfile: default target is the CLI, `dagster` target is used by
-  `docker-compose.yml` (webserver on host port 3070 + daemon)
+  `docker-compose.yml` (webserver on host port 3070 + daemon + SeaweedFS as local S3 on 8333;
+  MinIO images are no longer published)
+- S3 tests use a moto server over HTTP (`tests/test_lake.py`), never real AWS
 - Next.js dashboard in `dashboard/` (App Router, Cache Components, Tailwind, Recharts).
   Reads `MARTS_URL` (the `data` branch `marts.json` in production) or the bundled
   `dashboard/data/sample.json`. `dashboard/src/lib/schema.ts` is the export contract:
