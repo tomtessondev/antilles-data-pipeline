@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+/* Chart and page tokens. Series colours are the first two slots of a palette
+   validated for colour-vision deficiency; dark mode uses its own stepped values. */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-secondary: #52514e;
+  --ink-muted: #6d6b66;
+  --grid: #e1e0d9;
+  --baseline: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.1);
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --critical: #d03b3b;
+  --good: #006300;
+  /* One colour per town, fixed order (by location code). */
+  --town-1: #2a78d6;
+  --town-2: #eb6834;
+  --town-3: #1baf7a;
+  --town-4: #eda100;
+  --town-5: #e87ba4;
+  --town-6: #008300;
+  /* Sequential ramps: low recedes toward the surface. Blue for the map, orange for dust. */
+  --seq-blue-low: #cde2fb;
+  --seq-blue-high: #104281;
+  --seq-orange-low: #fde3d4;
+  --seq-orange-high: #8f3110;
+  --land: #ecebe6;
+  --on-seq-high: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #f0efec;
+    --ink-secondary: #c3c2b7;
+    --ink-muted: #989690;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --border: rgba(255, 255, 255, 0.1);
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --critical: #e66767;
+    --good: #0ca30c;
+    --town-1: #3987e5;
+    --town-2: #d95926;
+    --town-3: #199e70;
+    --town-4: #c98500;
+    --town-5: #d55181;
+    --town-6: #008300;
+    --seq-blue-low: #183a63;
+    --seq-blue-high: #b7d3f6;
+    --seq-orange-low: #4a2212;
+    --seq-orange-high: #f8bf9f;
+    --land: #2a2a28;
+    --on-seq-high: #0b0b0b;
+  }
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-grid: var(--grid);
+  --color-border: var(--border);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-critical: var(--critical);
+  --color-good: var(--good);
+  /* Only used from inline styles in the charts and map; declaring them here keeps
+     Tailwind from dropping the :root variables as unused. */
+  --color-town-1: var(--town-1);
+  --color-town-2: var(--town-2);
+  --color-town-3: var(--town-3);
+  --color-town-4: var(--town-4);
+  --color-town-5: var(--town-5);
+  --color-town-6: var(--town-6);
+  --color-seq-blue-low: var(--seq-blue-low);
+  --color-seq-blue-high: var(--seq-blue-high);
+  --color-seq-orange-low: var(--seq-orange-low);
+  --color-seq-orange-high: var(--seq-orange-high);
+  --color-land: var(--land);
+  --color-on-seq-high: var(--on-seq-high);
+  --color-baseline: var(--baseline);
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+}

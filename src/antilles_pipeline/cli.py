@@ -1,4 +1,4 @@
-"""Command-line entry point: `antilles-pipeline run`."""
+"""Command-line entry point: `antilles-pipeline run` and `antilles-pipeline export`."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from pathlib import Path
 import typer
 
 from antilles_pipeline.config import Settings
+from antilles_pipeline.export import write_export
 from antilles_pipeline.extract import extract_air_quality, extract_weather
 from antilles_pipeline.load import connect, load_air_quality, load_locations, load_weather
 
@@ -39,6 +40,20 @@ def run(
     finally:
         con.close()
     typer.echo(f"Loaded {n_weather} weather and {n_air} air-quality rows into {settings.db_path}")
+
+
+@app.command()
+def export(
+    out: Path = typer.Option(Path("data/marts.json"), help="JSON file to write"),
+    db_path: Path | None = typer.Option(None, help="DuckDB file (default: $ANTILLES_DB_PATH)"),
+) -> None:
+    """Export the dbt marts to JSON for the dashboard (run after `dbt build`)."""
+    settings = Settings() if db_path is None else Settings(db_path=db_path)
+    document = write_export(settings.db_path, out)
+    typer.echo(
+        f"Exported {len(document['weather'])} weather and "
+        f"{len(document['air_quality'])} air-quality days to {out}"
+    )
 
 
 if __name__ == "__main__":

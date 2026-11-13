@@ -17,7 +17,7 @@ Open-Meteo weather ─────┐
                         ├─► extract (httpx + retries) ──► DuckDB raw.* ──► dbt staging ──► dbt marts
 Open-Meteo air quality ─┘        Python package                              (tests)          │
                                                                                               ▼
-                                                                           dashboard (Next.js, planned)
+                       Next.js dashboard ◄── marts.json on the `data` branch ◄── export (daily)
 ```
 
 | Layer | Tooling | Where |
@@ -28,6 +28,7 @@ Open-Meteo air quality ─┘        Python package                             
 | Orchestration | GitHub Actions cron (daily) | `.github/workflows/pipeline.yml` |
 | Quality | pytest + respx (HTTP mocked), ruff, mypy `--strict` | `tests/`, `.github/workflows/ci.yml` |
 | Documentation | dbt docs (lineage, column descriptions, tests) on GitHub Pages | `.github/workflows/docs.yml` |
+| Serve | `antilles-pipeline export` to JSON; Next.js, TypeScript, Recharts, zod-validated contract | `src/antilles_pipeline/export.py`, `dashboard/` |
 | Packaging | pyproject, CLI entry point, Docker image | `pyproject.toml`, `Dockerfile` |
 
 ## Quick start
@@ -40,6 +41,12 @@ antilles-pipeline run --past-days 7      # extract + load into data/antilles.duc
 make transform                            # dbt build (models + tests)
 make check                                # lint, type-check, tests
 make docs                                 # dbt docs as a single static HTML page
+```
+
+Dashboard (reads the bundled sample unless `MARTS_URL` is set):
+
+```bash
+cd dashboard && npm ci && npm run dev    # http://localhost:3000
 ```
 
 With Docker:
@@ -82,6 +89,11 @@ between two neighbouring towns are smoothing, not local measurements.
 - **Config by environment variables** (`ANTILLES_DB_PATH`, `ANTILLES_WEATHER_API`,
   `ANTILLES_AIR_QUALITY_API`), no secrets in code.
 - **Tests never hit the network**: the APIs are mocked with respx and JSON fixtures.
+- **Dashboard without a database server**: the daily run exports the marts to one JSON
+  file on the `data` branch (a single commit, replaced each run). The dashboard fetches it
+  and refreshes hourly, so publishing new data needs no redeploy and no secret. The JSON
+  is parsed with zod; CI exports the fixture build and runs the dashboard's schema test
+  against it, so a column renamed in dbt fails the pull request.
 - **Why not fuel prices?** The national fuel price feed has no station in Guadeloupe or
   Martinique: prices there are capped monthly by prefectoral order, published only as PDF.
 
@@ -94,8 +106,8 @@ Full plan in [docs/ROADMAP.md](docs/ROADMAP.md).
 - [x] Incremental facts, location dimension, source freshness
 - [x] Second source: air quality and Saharan dust (Open-Meteo, CAMS)
 - [x] dbt docs published on GitHub Pages
+- [x] Next.js dashboard reading the marts
 - [ ] Orchestration with Airflow or Kestra in Docker Compose
-- [ ] Next.js dashboard reading the marts
 - [ ] Cloud deployment (BigQuery or MotherDuck) with Terraform
 
 ## Author

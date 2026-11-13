@@ -10,7 +10,7 @@ htmlcov/
 dist/
 build/
 *.egg-info/
-data/
+/data/
 *.duckdb
 *.duckdb.wal
 transform/target/
@@ -18,3 +18,4 @@ transform/dbt_packages/
 transform/logs/
 logs/
 .user.yml
+.gstack/

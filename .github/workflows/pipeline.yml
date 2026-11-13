@@ -5,6 +5,9 @@ on:
     - cron: "0 10 * * *" # 06:00 in the Antilles
   workflow_dispatch:
 
+permissions:
+  contents: write # push the marts export to the data branch
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -17,16 +20,36 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -e ".[transform]"
+      # Each run starts from an empty database, so the window is the dashboard's history.
       - name: Extract and load
-        run: antilles-pipeline run --past-days 7
+        run: antilles-pipeline run --past-days 31
       - name: Transform and test
         working-directory: transform
         run: dbt build --profiles-dir .
       - name: Source freshness
         working-directory: transform
         run: dbt source freshness --profiles-dir .
+      - name: Export marts
+        run: antilles-pipeline export --out data/marts.json
       - uses: actions/upload-artifact@v4
         with:
           name: antilles-duckdb
-          path: data/antilles.duckdb
+          path: |
+            data/antilles.duckdb
+            data/marts.json
           retention-days: 14
+      # The dashboard reads marts.json from the data branch. It holds a single commit,
+      # replaced on every run, so the repository does not grow by one export a day.
+      - name: Publish marts to the data branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/publish"
+          cp data/marts.json "$RUNNER_TEMP/publish/"
+          cd "$RUNNER_TEMP/publish"
+          git init -q -b data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add marts.json
+          git commit -q -m "Marts export from run $GITHUB_RUN_ID"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
