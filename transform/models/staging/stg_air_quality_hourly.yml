@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: stg_air_quality_hourly
+    description: >
+      Hourly air quality per town, concentrations in µg/m³. Model data (CAMS, coarse grid
+      interpolated by Open-Meteo), not ground-station measurements.
+    columns:
+      - name: location_code
+        data_tests: [not_null]
+      - name: observed_date
+        data_tests: [not_null]
+      - name: dust_ugm3
+        description: Mineral dust; high values signal Saharan dust episodes.
+      - name: european_aqi
+        description: European Air Quality Index (0 good, above 100 extremely poor).

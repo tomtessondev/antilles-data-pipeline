@@ -12,8 +12,9 @@ more than feature count. Every change should be something a recruiter can read.
 ## Stack
 
 - Python 3.11+ package in `src/antilles_pipeline` (src layout, hatchling)
-  - `config.py`: towns and settings (env: `ANTILLES_DB_PATH`, `ANTILLES_WEATHER_API`)
-  - `extract.py`: Open-Meteo hourly weather, httpx + tenacity retries
+  - `config.py`: towns and settings (env: `ANTILLES_DB_PATH`, `ANTILLES_WEATHER_API`,
+    `ANTILLES_AIR_QUALITY_API`)
+  - `extract.py`: Open-Meteo hourly weather and air quality, httpx + tenacity retries
   - `load.py`: idempotent upserts into DuckDB schema `raw`
   - `cli.py`: typer CLI `antilles-pipeline run`
 - dbt-duckdb project in `transform/` (staging views, marts tables, data tests)

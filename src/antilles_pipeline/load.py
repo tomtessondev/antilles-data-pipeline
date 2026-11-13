@@ -10,7 +10,7 @@ from pathlib import Path
 import duckdb
 
 from antilles_pipeline.config import Location
-from antilles_pipeline.extract import WeatherRecord
+from antilles_pipeline.extract import AirQualityRecord, WeatherRecord
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,19 @@ create table if not exists raw.weather_hourly (
     extracted_at         timestamp not null,
     primary key (location_code, observed_at)
 );
+
+create table if not exists raw.air_quality_hourly (
+    location_code    varchar   not null,
+    observed_at      timestamp not null,
+    pm10             double,
+    pm2_5            double,
+    dust             double,
+    ozone            double,
+    nitrogen_dioxide double,
+    european_aqi     integer,
+    extracted_at     timestamp not null,
+    primary key (location_code, observed_at)
+);
 """
 
 
@@ -52,14 +65,25 @@ def load_locations(con: duckdb.DuckDBPyConnection, locations: Sequence[Location]
     )
 
 
-def load_weather(con: duckdb.DuckDBPyConnection, records: Sequence[WeatherRecord]) -> int:
-    """Upsert hourly records: re-running the pipeline never creates duplicates."""
+def _upsert(
+    con: duckdb.DuckDBPyConnection,
+    table: str,
+    records: Sequence[WeatherRecord] | Sequence[AirQualityRecord],
+) -> int:
+    """Upsert records on the table's primary key: re-running never creates duplicates."""
     if not records:
-        logger.warning("No weather records to load")
+        logger.warning("No records to load into %s", table)
         return 0
-    con.executemany(
-        "insert or replace into raw.weather_hourly values (?, ?, ?, ?, ?, ?, ?)",
-        [astuple(r) for r in records],
-    )
-    logger.info("Loaded %d weather rows", len(records))
-    return len(records)
+    rows = [astuple(r) for r in records]
+    placeholders = ", ".join("?" * len(rows[0]))
+    con.executemany(f"insert or replace into {table} values ({placeholders})", rows)
+    logger.info("Loaded %d rows into %s", len(rows), table)
+    return len(rows)
+
+
+def load_weather(con: duckdb.DuckDBPyConnection, records: Sequence[WeatherRecord]) -> int:
+    return _upsert(con, "raw.weather_hourly", records)
+
+
+def load_air_quality(con: duckdb.DuckDBPyConnection, records: Sequence[AirQualityRecord]) -> int:
+    return _upsert(con, "raw.air_quality_hourly", records)

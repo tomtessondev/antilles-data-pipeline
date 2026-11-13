@@ -34,6 +34,15 @@ HOURLY_VARIABLES: tuple[str, ...] = (
     "wind_speed_10m",
 )
 
+AIR_QUALITY_VARIABLES: tuple[str, ...] = (
+    "pm10",
+    "pm2_5",
+    "dust",
+    "ozone",
+    "nitrogen_dioxide",
+    "european_aqi",
+)
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -47,7 +56,13 @@ class Settings:
             "ANTILLES_WEATHER_API", "https://api.open-meteo.com/v1/forecast"
         )
     )
+    air_quality_api_url: str = field(
+        default_factory=lambda: os.getenv(
+            "ANTILLES_AIR_QUALITY_API", "https://air-quality-api.open-meteo.com/v1/air-quality"
+        )
+    )
     timezone: str = "America/Guadeloupe"
     timeout_seconds: float = 30.0
     locations: tuple[Location, ...] = DEFAULT_LOCATIONS
     hourly_variables: tuple[str, ...] = HOURLY_VARIABLES
+    air_quality_variables: tuple[str, ...] = AIR_QUALITY_VARIABLES
