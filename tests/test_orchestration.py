@@ -35,6 +35,10 @@ def test_lineage_runs_from_the_apis_to_the_dashboard() -> None:
     def parents(key: AssetKey) -> set[AssetKey]:
         return set(graph.get(key).parent_keys)
 
+    assert parents(AssetKey(["raw", "weather_hourly"])) == {
+        AssetKey(["raw", "locations"]),
+        AssetKey(["lake", "weather_hourly"]),
+    }
     # Raw assets carry the keys dbt gives its sources, so the graph connects without glue.
     assert AssetKey(["raw", "weather_hourly"]) in parents(
         AssetKey(["staging", "stg_weather_hourly"])
@@ -47,10 +51,11 @@ def test_lineage_runs_from_the_apis_to_the_dashboard() -> None:
         AssetKey(["marts", "fct_daily_weather"]),
         AssetKey(["marts", "fct_daily_air_quality"]),
     }
-    groups = {key.path[-1]: graph.get(key).group_name for key in graph.get_all_asset_keys()}
-    assert groups["weather_hourly"] == "raw"
-    assert groups["stg_weather_hourly"] == "staging"
-    assert groups["fct_daily_weather"] == "marts"
+    groups = {key.to_user_string(): graph.get(key).group_name for key in graph.get_all_asset_keys()}
+    assert groups["lake/weather_hourly"] == "lake"
+    assert groups["raw/weather_hourly"] == "raw"
+    assert groups["staging/stg_weather_hourly"] == "staging"
+    assert groups["marts/fct_daily_weather"] == "marts"
     assert groups["marts_json"] == "serve"
 
 
@@ -75,6 +80,7 @@ def test_daily_job_end_to_end(
     """The real job: mocked APIs, real DuckDB, real dbt build and tests, real export."""
     monkeypatch.setenv("ANTILLES_DB_PATH", str(tmp_path / "e2e.duckdb"))
     monkeypatch.setenv("ANTILLES_EXPORT_PATH", str(tmp_path / "marts.json"))
+    monkeypatch.setenv("ANTILLES_LAKE_URL", str(tmp_path / "lake"))
     monkeypatch.setenv("ANTILLES_WEATHER_API", API_URL)
     monkeypatch.setenv("ANTILLES_AIR_QUALITY_API", AIR_QUALITY_URL)
     respx.get(API_URL).mock(return_value=httpx.Response(200, json=sample_payload))

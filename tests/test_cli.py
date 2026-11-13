@@ -22,6 +22,7 @@ def test_run_end_to_end(
 ) -> None:
     monkeypatch.setenv("ANTILLES_WEATHER_API", API_URL)
     monkeypatch.setenv("ANTILLES_AIR_QUALITY_API", AIR_QUALITY_URL)
+    monkeypatch.setenv("ANTILLES_LAKE_URL", str(tmp_path / "lake"))
     respx.get(API_URL).mock(return_value=httpx.Response(200, json=sample_payload))
     respx.get(AIR_QUALITY_URL).mock(return_value=httpx.Response(200, json=air_quality_payload))
     db = tmp_path / "cli.duckdb"
@@ -34,3 +35,5 @@ def test_run_end_to_end(
     assert con.execute("select count(*) from raw.weather_hourly").fetchone() == (18,)
     assert con.execute("select count(*) from raw.air_quality_hourly").fetchone() == (18,)
     con.close()
+    landed = sorted(p.parent.parent.name for p in (tmp_path / "lake").rglob("*.parquet"))
+    assert landed == ["air_quality_hourly", "weather_hourly"]
