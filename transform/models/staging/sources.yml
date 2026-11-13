@@ -9,7 +9,12 @@ sources:
           - name: location_code
             data_tests: [unique, not_null]
       - name: weather_hourly
+        # extracted_at is naive UTC, which is what dbt assumes for freshness checks.
         loaded_at_field: extracted_at
+        freshness:
+          # The pipeline runs once a day: one missed run warns, two fail.
+          warn_after: { count: 26, period: hour }
+          error_after: { count: 50, period: hour }
         columns:
           - name: location_code
             data_tests:

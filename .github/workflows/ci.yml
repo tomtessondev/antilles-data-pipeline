@@ -39,3 +39,10 @@ jobs:
       - name: dbt build (models + tests)
         working-directory: transform
         run: dbt build --profiles-dir .
+      - name: Reload fixture and rebuild (exercises the incremental path)
+        run: |
+          python scripts/load_fixture.py "$ANTILLES_DB_PATH"
+          cd transform && dbt build --profiles-dir .
+      - name: Source freshness
+        working-directory: transform
+        run: dbt source freshness --profiles-dir .

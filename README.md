@@ -22,7 +22,7 @@ Open-Meteo API ──► extract (httpx + retries) ──► DuckDB raw.*  ─�
 | --- | --- | --- |
 | Extract | Python 3.11+, httpx, tenacity (exponential retries) | `src/antilles_pipeline/extract.py` |
 | Load | DuckDB, idempotent upserts on `(location, hour)` | `src/antilles_pipeline/load.py` |
-| Transform | dbt-duckdb: staging views, daily mart, schema tests | `transform/` |
+| Transform | dbt-duckdb: staging views, incremental daily fact, location dimension, tests, source freshness | `transform/` |
 | Orchestration | GitHub Actions cron (daily) | `.github/workflows/pipeline.yml` |
 | Quality | pytest + respx (HTTP mocked), ruff, mypy `--strict` | `tests/`, `.github/workflows/ci.yml` |
 | Packaging | pyproject, CLI entry point, Docker image | `pyproject.toml`, `Dockerfile` |
@@ -49,8 +49,13 @@ docker run --rm -v "$PWD/data:/app/data" antilles-pipeline run --past-days 7
 
 - `raw.locations`: the six towns tracked (3 in Guadeloupe, 3 in Martinique).
 - `raw.weather_hourly`: one row per location and hour, primary key `(location_code, observed_at)`.
-- `stg_weather_hourly`: typed, renamed, with the territory joined in.
+- `stg_locations`, `stg_weather_hourly`: typed, renamed, with the territory joined in.
+- `dim_location`: one row per town with territory and coordinates.
 - `fct_daily_weather`: daily min/max/avg temperature, total rainfall, max wind, per town.
+  **Incremental**: each run rebuilds only the (town, day) pairs that received new hourly
+  rows, from all of that day's hours. CI loads the data twice to exercise this path.
+- **Source freshness** on `raw.weather_hourly.extracted_at`: warns after 26 h, fails
+  after 50 h (`make freshness`).
 
 ## Design choices
 

@@ -22,6 +22,9 @@ jobs:
       - name: Transform and test
         working-directory: transform
         run: dbt build --profiles-dir .
+      - name: Source freshness
+        working-directory: transform
+        run: dbt source freshness --profiles-dir .
       - uses: actions/upload-artifact@v4
         with:
           name: antilles-duckdb

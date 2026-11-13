@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: dim_location
+    description: One row per town, with its territory and coordinates. Joins to the facts on location_code.
+    columns:
+      - name: location_code
+        data_tests: [unique, not_null]
+      - name: territory
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Guadeloupe", "Martinique"]
+      - name: latitude
+        data_tests: [not_null]
+      - name: longitude
+        data_tests: [not_null]
