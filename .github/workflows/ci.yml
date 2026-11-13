@@ -17,11 +17,25 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - run: pip install -e ".[dev]"
+      # orchestration pulls in Dagster and dbt: the tests run the whole Dagster job.
+      - run: pip install -e ".[dev,orchestration]"
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy
       - run: pytest
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the CLI image (default target)
+        run: docker build -t antilles-pipeline .
+      - name: Build the Dagster image used by docker compose
+        run: docker build --target dagster -t antilles-pipeline-dagster .
+      - name: Check that the Dagster definitions load inside the image
+        run: >
+          docker run --rm antilles-pipeline-dagster
+          dagster definitions validate -m antilles_pipeline.orchestration.definitions
 
   dbt:
     runs-on: ubuntu-latest

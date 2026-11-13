@@ -25,22 +25,70 @@ Open-Meteo air quality ─┘        Python package                             
 | Extract | Python 3.11+, httpx, tenacity (exponential retries) | `src/antilles_pipeline/extract.py` |
 | Load | DuckDB, idempotent upserts on `(location, hour)` | `src/antilles_pipeline/load.py` |
 | Transform | dbt-duckdb: staging views, incremental daily facts, location dimension, tests, source freshness | `transform/` |
-| Orchestration | GitHub Actions cron (daily) | `.github/workflows/pipeline.yml` |
+| Orchestration | Dagster assets (dbt models as assets, dbt tests as asset checks), retries, daily schedule; run by Docker Compose locally and by a GitHub Actions cron in production | `src/antilles_pipeline/orchestration/`, `docker-compose.yml`, `.github/workflows/pipeline.yml` |
 | Quality | pytest + respx (HTTP mocked), ruff, mypy `--strict` | `tests/`, `.github/workflows/ci.yml` |
 | Documentation | dbt docs (lineage, column descriptions, tests) on GitHub Pages | `.github/workflows/docs.yml` |
 | Serve | `antilles-pipeline export` to JSON; Next.js, TypeScript, Recharts, zod-validated contract | `src/antilles_pipeline/export.py`, `dashboard/` |
-| Packaging | pyproject, CLI entry point, Docker image | `pyproject.toml`, `Dockerfile` |
+| Packaging | pyproject, CLI entry point, multi-stage Docker image (CLI and Dagster targets) | `pyproject.toml`, `Dockerfile` |
+
+### Orchestration
+
+The pipeline is defined once, as Dagster assets. The raw assets use the keys dbt gives its
+sources, so the graph connects from the APIs to the dashboard file without glue code:
+
+```mermaid
+flowchart LR
+  subgraph raw
+    locations[raw/locations]
+    weather[raw/weather_hourly]
+    air[raw/air_quality_hourly]
+  end
+  subgraph staging
+    stg_loc[stg_locations]
+    stg_w[stg_weather_hourly]
+    stg_a[stg_air_quality_hourly]
+  end
+  subgraph marts
+    dim[dim_location]
+    fw[fct_daily_weather]
+    fa[fct_daily_air_quality]
+  end
+  locations --> weather & air
+  locations --> stg_loc --> dim
+  weather --> stg_w --> fw
+  stg_loc --> stg_w
+  air --> stg_a --> fa
+  dim & fw & fa --> json[serve/marts_json]
+```
+
+- **One job, two runners.** `daily_pipeline` runs at 06:00 Antilles time under the Dagster
+  daemon (`make up`), and the GitHub Actions cron executes the same job with
+  `dagster job execute`, then publishes the JSON for the dashboard.
+- **Retries at two levels**: tenacity retries each HTTP call; a Dagster retry policy
+  re-runs a whole extraction asset (3 times, exponential backoff from 5 minutes).
+- **dbt tests are asset checks**: a failing test shows on the asset in the UI and fails
+  the run before the export, so the dashboard never receives untested data.
+- **One writer**: every step writes the same DuckDB file, so the job uses the in-process
+  executor and the Docker instance allows one run at a time.
 
 ## Quick start
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev,transform]"
+make install                              # pip install -e ".[dev,orchestration]"
 
 antilles-pipeline run --past-days 7      # extract + load into data/antilles.duckdb
 make transform                            # dbt build (models + tests)
 make check                                # lint, type-check, tests
 make docs                                 # dbt docs as a single static HTML page
+make dagster                              # Dagster UI with hot reload (dagster dev)
+```
+
+Orchestration with Docker Compose (Dagster webserver and daemon, data in `./data`):
+
+```bash
+make up                                   # http://localhost:3070, daily schedule on
+make down
 ```
 
 Dashboard (reads the bundled sample unless `MARTS_URL` is set):
@@ -49,11 +97,11 @@ Dashboard (reads the bundled sample unless `MARTS_URL` is set):
 cd dashboard && npm ci && npm run dev    # http://localhost:3000
 ```
 
-With Docker:
+CLI only, with Docker:
 
 ```bash
 docker build -t antilles-pipeline .
-docker run --rm -v "$PWD/data:/app/data" antilles-pipeline run --past-days 7
+docker run --rm -v "$PWD/data:/data" antilles-pipeline run --past-days 7
 ```
 
 ## Data model
@@ -107,8 +155,9 @@ Full plan in [docs/ROADMAP.md](docs/ROADMAP.md).
 - [x] Second source: air quality and Saharan dust (Open-Meteo, CAMS)
 - [x] dbt docs published on GitHub Pages
 - [x] Next.js dashboard reading the marts
-- [ ] Orchestration with Airflow or Kestra in Docker Compose
-- [ ] Cloud deployment (BigQuery or MotherDuck) with Terraform
+- [x] Orchestration with Dagster, run locally with Docker Compose
+- [ ] Raw data as partitioned Parquet on S3, queried from DuckDB
+- [ ] Infrastructure as code with Terraform
 
 ## Author
 

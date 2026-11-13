@@ -1,0 +1,30 @@
+# Local orchestration: Dagster UI on http://localhost:3070, daily schedule run by the daemon.
+# The DuckDB file and the JSON export land in ./data on the host.
+
+x-dagster: &dagster
+  build:
+    context: .
+    target: dagster
+  image: antilles-pipeline-dagster
+  volumes:
+    - ./data:/data
+    - dagster_home:/opt/dagster/home
+  restart: unless-stopped
+
+services:
+  webserver:
+    <<: *dagster
+    command:
+      ["dagster-webserver", "-h", "0.0.0.0", "-p", "3000", "-m", "antilles_pipeline.orchestration.definitions"]
+    ports:
+      # Not 3000 on the host: that is the dashboard's `npm run dev`.
+      - "${DAGSTER_PORT:-3070}:3000"
+
+  daemon:
+    <<: *dagster
+    command: ["dagster-daemon", "run", "-m", "antilles_pipeline.orchestration.definitions"]
+    depends_on:
+      - webserver
+
+volumes:
+  dagster_home:
