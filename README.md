@@ -55,6 +55,9 @@ docker run --rm -v "$PWD/data:/app/data" antilles-pipeline run --past-days 7
 ## Design choices
 
 - **Idempotent loads**: re-running a day never duplicates rows (`insert or replace` on the key).
+- **Past hours only**: the forecast endpoint also returns the rest of today as predictions;
+  hours after the extraction time are dropped. `observed_at` is local Antilles time (UTC−4),
+  `extracted_at` is UTC.
 - **Retries with backoff** on network errors and 5xx answers; a malformed payload fails loudly.
 - **Config by environment variables** (`ANTILLES_DB_PATH`, `ANTILLES_WEATHER_API`), no secrets in code.
 - **Tests never hit the network**: the API is mocked with respx and a JSON fixture.

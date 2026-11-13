@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 import httpx
@@ -10,9 +11,13 @@ from antilles_pipeline.config import DEFAULT_LOCATIONS, HOURLY_VARIABLES, Settin
 from antilles_pipeline.extract import ExtractError, extract_weather, parse_hourly
 from tests.conftest import API_URL
 
+LATE = datetime(2026, 11, 12, 23, 0)
+
 
 def test_parse_hourly_flattens_columns(sample_payload: dict[str, Any]) -> None:
-    rows = parse_hourly(sample_payload, DEFAULT_LOCATIONS[0], HOURLY_VARIABLES, "2026-11-12T03:00")
+    rows = parse_hourly(
+        sample_payload, DEFAULT_LOCATIONS[0], HOURLY_VARIABLES, "2026-11-12T03:00", not_after=LATE
+    )
 
     assert len(rows) == 3
     assert rows[0].location_code == "PAP"
@@ -21,15 +26,27 @@ def test_parse_hourly_flattens_columns(sample_payload: dict[str, Any]) -> None:
     assert rows[2].temperature_2m is None  # missing values are kept as NULL
 
 
+def test_parse_hourly_drops_forecast_hours(sample_payload: dict[str, Any]) -> None:
+    rows = parse_hourly(
+        sample_payload,
+        DEFAULT_LOCATIONS[0],
+        HOURLY_VARIABLES,
+        "now",
+        not_after=datetime(2026, 11, 12, 1, 30),
+    )
+
+    assert [r.observed_at for r in rows] == ["2026-11-12T00:00", "2026-11-12T01:00"]
+
+
 def test_parse_hourly_rejects_missing_block() -> None:
     with pytest.raises(ExtractError):
-        parse_hourly({}, DEFAULT_LOCATIONS[0], HOURLY_VARIABLES, "now")
+        parse_hourly({}, DEFAULT_LOCATIONS[0], HOURLY_VARIABLES, "now", not_after=LATE)
 
 
 def test_parse_hourly_rejects_misaligned_columns(sample_payload: dict[str, Any]) -> None:
     sample_payload["hourly"]["precipitation"] = [0.0]
     with pytest.raises(ExtractError, match="precipitation"):
-        parse_hourly(sample_payload, DEFAULT_LOCATIONS[0], HOURLY_VARIABLES, "now")
+        parse_hourly(sample_payload, DEFAULT_LOCATIONS[0], HOURLY_VARIABLES, "now", not_after=LATE)
 
 
 @respx.mock

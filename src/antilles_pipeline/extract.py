@@ -6,6 +6,7 @@ import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import httpx
 from tenacity import (
@@ -53,9 +54,19 @@ def _get_json(client: httpx.Client, url: str, params: dict[str, Any]) -> dict[st
 
 
 def parse_hourly(
-    payload: dict[str, Any], location: Location, variables: tuple[str, ...], extracted_at: str
+    payload: dict[str, Any],
+    location: Location,
+    variables: tuple[str, ...],
+    extracted_at: str,
+    *,
+    not_after: datetime,
 ) -> list[WeatherRecord]:
-    """Turn Open-Meteo's column-oriented `hourly` block into one record per hour."""
+    """Turn Open-Meteo's column-oriented `hourly` block into one record per hour.
+
+    The forecast endpoint also returns the rest of the current day as predictions; hours later
+    than `not_after` (naive, in the API's local timezone) are dropped so the table only holds
+    past hours.
+    """
     hourly = payload.get("hourly")
     if not isinstance(hourly, dict) or "time" not in hourly:
         raise ExtractError(f"No hourly data for {location.code}")
@@ -77,6 +88,7 @@ def parse_hourly(
             extracted_at=extracted_at,
         )
         for i, ts in enumerate(times)
+        if datetime.fromisoformat(ts) <= not_after
     ]
 
 
@@ -86,7 +98,9 @@ def extract_weather(
     client: httpx.Client | None = None,
 ) -> list[WeatherRecord]:
     """Fetch the last `past_days` days of hourly weather for every configured location."""
-    extracted_at = datetime.now(UTC).isoformat(timespec="seconds")
+    now = datetime.now(UTC)
+    extracted_at = now.isoformat(timespec="seconds")
+    local_now = now.astimezone(ZoneInfo(settings.timezone)).replace(tzinfo=None)
     owns_client = client is None
     http = client or httpx.Client(timeout=settings.timeout_seconds)
     records: list[WeatherRecord] = []
@@ -101,7 +115,9 @@ def extract_weather(
                 "forecast_days": 1,
             }
             payload = _get_json(http, settings.api_base_url, params)
-            rows = parse_hourly(payload, location, settings.hourly_variables, extracted_at)
+            rows = parse_hourly(
+                payload, location, settings.hourly_variables, extracted_at, not_after=local_now
+            )
             logger.info("Extracted %d rows for %s", len(rows), location.name)
             records.extend(rows)
     finally:
