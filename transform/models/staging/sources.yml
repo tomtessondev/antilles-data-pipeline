@@ -3,18 +3,34 @@ version: 2
 sources:
   - name: raw
     schema: raw
+    # The pipeline runs once a day: one missed run warns, two fail.
+    freshness:
+      warn_after: { count: 26, period: hour }
+      error_after: { count: 50, period: hour }
     tables:
       - name: locations
+        freshness: null # static reference data, written by every run
         columns:
           - name: location_code
             data_tests: [unique, not_null]
+
       - name: weather_hourly
         # extracted_at is naive UTC, which is what dbt assumes for freshness checks.
         loaded_at_field: extracted_at
-        freshness:
-          # The pipeline runs once a day: one missed run warns, two fail.
-          warn_after: { count: 26, period: hour }
-          error_after: { count: 50, period: hour }
+        columns:
+          - name: location_code
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'locations')
+                    field: location_code
+          - name: observed_at
+            data_tests: [not_null]
+
+      - name: air_quality_hourly
+        description: Hourly air quality from the CAMS global model, served by Open-Meteo.
+        loaded_at_field: extracted_at
         columns:
           - name: location_code
             data_tests:

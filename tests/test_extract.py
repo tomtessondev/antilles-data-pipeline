@@ -7,9 +7,20 @@ import httpx
 import pytest
 import respx
 
-from antilles_pipeline.config import DEFAULT_LOCATIONS, HOURLY_VARIABLES, Settings
-from antilles_pipeline.extract import ExtractError, extract_weather, parse_hourly
-from tests.conftest import API_URL
+from antilles_pipeline.config import (
+    AIR_QUALITY_VARIABLES,
+    DEFAULT_LOCATIONS,
+    HOURLY_VARIABLES,
+    Settings,
+)
+from antilles_pipeline.extract import (
+    ExtractError,
+    extract_air_quality,
+    extract_weather,
+    parse_air_quality,
+    parse_hourly,
+)
+from tests.conftest import AIR_QUALITY_URL, API_URL
 
 LATE = datetime(2026, 11, 12, 23, 0)
 
@@ -77,3 +88,44 @@ def test_extract_weather_retries_transient_errors(
 
     assert route.call_count == 2
     assert len(records) == 3
+
+
+def test_parse_air_quality_flattens_columns(air_quality_payload: dict[str, Any]) -> None:
+    rows = parse_air_quality(
+        air_quality_payload, DEFAULT_LOCATIONS[3], AIR_QUALITY_VARIABLES, "now", not_after=LATE
+    )
+
+    assert len(rows) == 3
+    assert rows[0].location_code == "FDF"
+    assert rows[1].dust == 6.5
+    assert rows[2].european_aqi == 29
+    assert rows[2].pm10 is None  # missing values are kept as NULL
+
+
+def test_parse_air_quality_drops_forecast_hours(air_quality_payload: dict[str, Any]) -> None:
+    rows = parse_air_quality(
+        air_quality_payload,
+        DEFAULT_LOCATIONS[0],
+        AIR_QUALITY_VARIABLES,
+        "now",
+        not_after=datetime(2026, 11, 12, 0, 0),
+    )
+
+    assert [r.observed_at for r in rows] == ["2026-11-12T00:00"]
+
+
+@respx.mock
+def test_extract_air_quality_calls_its_own_api(
+    settings: Settings, air_quality_payload: dict[str, Any]
+) -> None:
+    route = respx.get(AIR_QUALITY_URL).mock(
+        return_value=httpx.Response(200, json=air_quality_payload)
+    )
+
+    records = extract_air_quality(settings, past_days=2)
+
+    assert route.call_count == len(settings.locations)
+    assert len(records) == 3 * len(settings.locations)
+    params = route.calls[0].request.url.params
+    assert params["hourly"] == ",".join(AIR_QUALITY_VARIABLES)
+    assert params["timezone"] == "America/Guadeloupe"

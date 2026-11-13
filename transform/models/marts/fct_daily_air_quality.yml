@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: fct_daily_air_quality
+    description: >
+      One row per town and day: particulate matter, Saharan dust, ozone and the European AQI.
+      Incremental, like fct_daily_weather. Join to dim_location for town names.
+    columns:
+      - name: location_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_location')
+                field: location_code
+      - name: observed_date
+        data_tests: [not_null]
+      - name: dust_max_ugm3
+        description: Highest hourly mineral dust concentration of the day.
+      - name: exceeds_pm10_daily_limit
+        description: True when the daily PM10 mean is above the EU limit of 50 µg/m³.
+        data_tests: [not_null]
+      - name: hours_observed
+        description: Hours aggregated for the day; below 24 for the current, partial day.
+        data_tests: [not_null]
+      - name: last_extracted_at
+        description: Latest extraction (UTC) that contributed to the row; drives incremental runs.
+        data_tests: [not_null]
