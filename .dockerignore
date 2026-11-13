@@ -1,0 +1,5 @@
+.venv
+.git
+data
+transform/target
+**/__pycache__

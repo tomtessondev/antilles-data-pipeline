@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: locations
+        columns:
+          - name: location_code
+            data_tests: [unique, not_null]
+      - name: weather_hourly
+        loaded_at_field: extracted_at
+        columns:
+          - name: location_code
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'locations')
+                    field: location_code
+          - name: observed_at
+            data_tests: [not_null]

@@ -1,0 +1,29 @@
+name: Daily pipeline
+
+on:
+  schedule:
+    - cron: "0 10 * * *" # 06:00 in the Antilles
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      ANTILLES_DB_PATH: ${{ github.workspace }}/data/antilles.duckdb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[transform]"
+      - name: Extract and load
+        run: antilles-pipeline run --past-days 7
+      - name: Transform and test
+        working-directory: transform
+        run: dbt build --profiles-dir .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: antilles-duckdb
+          path: data/antilles.duckdb
+          retention-days: 14

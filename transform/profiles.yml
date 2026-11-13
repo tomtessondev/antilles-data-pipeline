@@ -1,0 +1,7 @@
+antilles:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('ANTILLES_DB_PATH', '../data/antilles.duckdb') }}"
+      threads: 4
