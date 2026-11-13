@@ -43,9 +43,26 @@ export function townSeries(marts: Marts, locationCode: string): TownSeries | und
   return { location, days };
 }
 
+/** Every town, in a fixed order (by location code) so colours follow the town. */
+export function allTownSeries(marts: Marts): TownSeries[] {
+  return [...marts.locations]
+    .sort((a, b) => a.location_code.localeCompare(b.location_code))
+    .map((location) => townSeries(marts, location.location_code))
+    .filter((series): series is TownSeries => series !== undefined);
+}
+
 /** The most recent complete day, used for the summary cards. */
 export function latestDay(series: TownSeries): TownDay | undefined {
   return series.days.at(-1);
+}
+
+/** Most recent complete day across all towns: the end of every period window. */
+export function latestDate(series: TownSeries[]): string | undefined {
+  return series
+    .map((s) => s.days.at(-1)?.date)
+    .filter((date): date is string => date !== undefined)
+    .sort()
+    .at(-1);
 }
 
 export function locationsByTerritory(locations: Location[]): [string, Location[]][] {
@@ -54,6 +71,28 @@ export function locationsByTerritory(locations: Location[]): [string, Location[]
     groups.set(location.territory, [...(groups.get(location.territory) ?? []), location]);
   }
   return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
+}
+
+/** Calendar arithmetic on ISO dates ("2026-11-05"), timezone-free. */
+export function addDays(isoDate: string, days: number): string {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+/** The `length` days ending on `end`, oldest first. */
+export function dateRange(end: string, length: number): string[] {
+  return Array.from({ length }, (_, i) => addDays(end, i - length + 1));
+}
+
+/**
+ * Days inside a window of `length` days ending on `end`. `offset` 1 is the window just
+ * before it, used to compute trends.
+ */
+export function windowDays(days: TownDay[], end: string, length: number, offset = 0): TownDay[] {
+  const last = addDays(end, -offset * length);
+  const first = addDays(last, -(length - 1));
+  return days.filter((d) => d.date >= first && d.date <= last);
 }
 
 const dayFormat = new Intl.DateTimeFormat("en-GB", {

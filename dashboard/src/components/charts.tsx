@@ -103,6 +103,7 @@ function LinesChart({ data, series, unit, limit }: {
       {limit && (
         <ReferenceLine
           y={limit.value}
+          ifOverflow="extendDomain"
           stroke="var(--critical)"
           label={{ value: limit.label, position: "insideTopRight", fill: "var(--ink-secondary)", fontSize: 12 }}
         />

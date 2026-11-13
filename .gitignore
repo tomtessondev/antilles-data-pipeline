@@ -18,3 +18,4 @@ transform/dbt_packages/
 transform/logs/
 logs/
 .user.yml
+.gstack/
