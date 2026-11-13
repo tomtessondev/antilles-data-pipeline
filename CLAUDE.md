@@ -18,12 +18,18 @@ more than feature count. Every change should be something a recruiter can read.
   - `load.py`: idempotent upserts into DuckDB schema `raw`
   - `export.py`: marts to one JSON document for the dashboard
   - `cli.py`: typer CLI `antilles-pipeline run` and `antilles-pipeline export`
+  - `orchestration/`: Dagster assets (raw tables keyed like the dbt sources, dbt models via
+    dagster-dbt, `marts_json`), job `daily_pipeline` and its 06:00 schedule. No
+    `from __future__ import annotations` in asset modules: Dagster reads annotations at runtime.
+    The dbt assets need `transform/target/manifest.json` (`dbt parse`) before import.
 - dbt-duckdb project in `transform/` (staging views, marts tables, data tests)
 - pytest + respx (HTTP is always mocked), ruff, mypy --strict
-- GitHub Actions: `ci.yml` (lint, types, tests, dbt on fixture data),
-  `pipeline.yml` (daily cron, real API, uploads the DuckDB file) and
-  `docs.yml` (dbt docs on fixture data, deployed to GitHub Pages from `main`)
-- Docker image whose entrypoint is the CLI
+- GitHub Actions: `ci.yml` (lint, types, tests incl. the full Dagster job, dbt on fixture
+  data, dashboard, Docker builds), `pipeline.yml` (daily cron running the Dagster job on the
+  real API, publishes `marts.json` to the `data` branch) and `docs.yml` (dbt docs on
+  fixture data, deployed to GitHub Pages from `main`)
+- Multi-stage Dockerfile: default target is the CLI, `dagster` target is used by
+  `docker-compose.yml` (webserver on host port 3070 + daemon)
 - Next.js dashboard in `dashboard/` (App Router, Cache Components, Tailwind, Recharts).
   Reads `MARTS_URL` (the `data` branch `marts.json` in production) or the bundled
   `dashboard/data/sample.json`. `dashboard/src/lib/schema.ts` is the export contract:
@@ -33,12 +39,14 @@ more than feature count. Every change should be something a recruiter can read.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-make install      # pip install -e ".[dev,transform]"
+make install      # pip install -e ".[dev,orchestration]"
 make check        # ruff + mypy + pytest
 make run          # real extraction (needs internet)
 make fixture      # load test data instead, no network
 make transform    # dbt build (models + tests)
 make docs         # dbt docs as a single static HTML page
+make dagster      # dagster dev (UI, hot reload)
+make up / down    # Docker Compose: Dagster webserver + daemon
 cd dashboard && npm run lint && npm run typecheck && npm test && npm run build
 ```
 

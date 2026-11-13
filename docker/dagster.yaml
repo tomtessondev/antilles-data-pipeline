@@ -1,0 +1,9 @@
+# Dagster instance for the Docker Compose stack. Storage defaults to SQLite under
+# DAGSTER_HOME, a volume shared by the webserver and the daemon.
+telemetry:
+  enabled: false
+
+concurrency:
+  runs:
+    # Every run writes the same DuckDB file, which allows a single writer.
+    max_concurrent_runs: 1

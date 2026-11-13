@@ -13,24 +13,24 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ANTILLES_DB_PATH: ${{ github.workspace }}/data/antilles.duckdb
+      ANTILLES_EXPORT_PATH: ${{ github.workspace }}/data/marts.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-      - run: pip install -e ".[transform]"
-      # Each run starts from an empty database, so the window is the dashboard's history.
-      - name: Extract and load
-        run: antilles-pipeline run --past-days 31
-      - name: Transform and test
+      - run: pip install -e ".[orchestration]"
+      - name: Parse the dbt project (the Dagster dbt assets are built from the manifest)
         working-directory: transform
-        run: dbt build --profiles-dir .
+        run: dbt parse --profiles-dir .
+      # The same Dagster job that the Docker Compose stack schedules: extract and load
+      # (31 days, since each run starts from an empty database), dbt build, JSON export.
+      - name: Run the daily Dagster job
+        run: dagster job execute -m antilles_pipeline.orchestration.definitions -j daily_pipeline
       - name: Source freshness
         working-directory: transform
         run: dbt source freshness --profiles-dir .
-      - name: Export marts
-        run: antilles-pipeline export --out data/marts.json
       - uses: actions/upload-artifact@v4
         with:
           name: antilles-duckdb
