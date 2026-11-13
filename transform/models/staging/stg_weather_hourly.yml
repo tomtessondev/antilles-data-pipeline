@@ -4,13 +4,29 @@ models:
   - name: stg_weather_hourly
     description: Hourly weather per town, typed and joined to its territory.
     columns:
+      - name: location_code
+        description: '{{ doc("location_code") }}'
+      - name: town
+        description: Town name.
       - name: territory
+        description: '{{ doc("territory") }}'
         data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: ["Guadeloupe", "Martinique"]
+      - name: observed_at
+        description: '{{ doc("observed_at") }}'
+      - name: observed_date
+        description: '{{ doc("observed_date") }}'
+      - name: temperature_c
+        description: Air temperature at 2 m, °C.
       - name: humidity_pct
         description: Relative humidity in percent (0-100).
       - name: precipitation_mm
+        description: Precipitation over the hour, mm; missing values count as no rain.
         data_tests: [not_null]
+      - name: wind_speed_kmh
+        description: Wind speed at 10 m, km/h.
+      - name: extracted_at
+        description: '{{ doc("extracted_at") }}'

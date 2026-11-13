@@ -7,6 +7,7 @@ models:
       Incremental, like fct_daily_weather. Join to dim_location for town names.
     columns:
       - name: location_code
+        description: '{{ doc("location_code") }}'
         data_tests:
           - not_null
           - relationships:
@@ -14,15 +15,26 @@ models:
                 to: ref('dim_location')
                 field: location_code
       - name: observed_date
+        description: '{{ doc("observed_date") }}'
         data_tests: [not_null]
+      - name: pm10_avg_ugm3
+        description: Daily mean PM10, µg/m³.
+      - name: pm10_max_ugm3
+        description: Highest hourly PM10 of the day, µg/m³.
+      - name: pm2_5_avg_ugm3
+        description: Daily mean PM2.5, µg/m³.
       - name: dust_max_ugm3
-        description: Highest hourly mineral dust concentration of the day.
+        description: Highest hourly mineral dust concentration of the day, µg/m³.
+      - name: ozone_max_ugm3
+        description: Highest hourly ozone concentration of the day, µg/m³.
+      - name: european_aqi_max
+        description: Worst hourly European AQI of the day.
       - name: exceeds_pm10_daily_limit
         description: True when the daily PM10 mean is above the EU limit of 50 µg/m³.
         data_tests: [not_null]
       - name: hours_observed
-        description: Hours aggregated for the day; below 24 for the current, partial day.
+        description: '{{ doc("hours_observed") }}'
         data_tests: [not_null]
       - name: last_extracted_at
-        description: Latest extraction (UTC) that contributed to the row; drives incremental runs.
+        description: '{{ doc("last_extracted_at") }}'
         data_tests: [not_null]

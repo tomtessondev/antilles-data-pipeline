@@ -28,7 +28,8 @@ freshness:
 	cd transform && dbt source freshness --profiles-dir .
 
 docs:
-	cd transform && dbt docs generate --profiles-dir .
+	cd transform && dbt docs generate --profiles-dir . --static
+	@echo "Open transform/target/static_index.html in a browser"
 
 clean:
 	rm -rf data transform/target transform/logs .pytest_cache .mypy_cache .ruff_cache .coverage
