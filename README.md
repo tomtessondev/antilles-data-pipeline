@@ -61,6 +61,8 @@ docker run --rm -v "$PWD/data:/app/data" antilles-pipeline run --past-days 7
 
 ## Roadmap
 
+Full plan in [docs/ROADMAP.md](docs/ROADMAP.md).
+
 - [x] Python package: extract, load, CLI, tests, CI
 - [x] dbt staging and daily mart with data-quality tests
 - [ ] Second source: fuel prices or water data from data.gouv.fr
