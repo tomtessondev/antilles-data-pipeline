@@ -49,3 +49,36 @@ jobs:
       - name: Docs generate (published from main by docs.yml)
         working-directory: transform
         run: dbt docs generate --profiles-dir . --static
+      - name: Export marts for the dashboard contract test
+        run: antilles-pipeline export --out "$RUNNER_TEMP/marts.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marts-fixture-export
+          path: ${{ runner.temp }}/marts.json
+          retention-days: 3
+
+  dashboard:
+    needs: dbt
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - uses: actions/download-artifact@v4
+        with:
+          name: marts-fixture-export
+          path: ${{ runner.temp }}/export
+      - name: Unit tests and contract test against a fresh export
+        run: npm test
+        env:
+          MARTS_FILE: ${{ runner.temp }}/export/marts.json
+      - run: npm run build
