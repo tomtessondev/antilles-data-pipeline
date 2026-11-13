@@ -20,7 +20,9 @@ def main(db_path: str) -> None:
     records = [
         record
         for location in DEFAULT_LOCATIONS
-        for record in parse_hourly(payload, location, HOURLY_VARIABLES, extracted_at)
+        for record in parse_hourly(
+            payload, location, HOURLY_VARIABLES, extracted_at, not_after=datetime.max
+        )
     ]
     con = connect(Path(db_path))
     try:
