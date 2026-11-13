@@ -19,8 +19,9 @@ more than feature count. Every change should be something a recruiter can read.
   - `cli.py`: typer CLI `antilles-pipeline run`
 - dbt-duckdb project in `transform/` (staging views, marts tables, data tests)
 - pytest + respx (HTTP is always mocked), ruff, mypy --strict
-- GitHub Actions: `ci.yml` (lint, types, tests, dbt on fixture data) and
-  `pipeline.yml` (daily cron, real API, uploads the DuckDB file)
+- GitHub Actions: `ci.yml` (lint, types, tests, dbt on fixture data),
+  `pipeline.yml` (daily cron, real API, uploads the DuckDB file) and
+  `docs.yml` (dbt docs on fixture data, deployed to GitHub Pages from `main`)
 - Docker image whose entrypoint is the CLI
 
 ## Commands
@@ -32,6 +33,7 @@ make check        # ruff + mypy + pytest
 make run          # real extraction (needs internet)
 make fixture      # load test data instead, no network
 make transform    # dbt build (models + tests)
+make docs         # dbt docs as a single static HTML page
 ```
 
 ## Rules

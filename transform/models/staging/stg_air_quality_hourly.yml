@@ -7,10 +7,24 @@ models:
       interpolated by Open-Meteo), not ground-station measurements.
     columns:
       - name: location_code
+        description: '{{ doc("location_code") }}'
         data_tests: [not_null]
+      - name: observed_at
+        description: '{{ doc("observed_at") }}'
       - name: observed_date
+        description: '{{ doc("observed_date") }}'
         data_tests: [not_null]
+      - name: pm10_ugm3
+        description: Particulate matter under 10 µm.
+      - name: pm2_5_ugm3
+        description: Particulate matter under 2.5 µm.
       - name: dust_ugm3
         description: Mineral dust; high values signal Saharan dust episodes.
+      - name: ozone_ugm3
+        description: Ozone.
+      - name: no2_ugm3
+        description: Nitrogen dioxide.
       - name: european_aqi
         description: European Air Quality Index (0 good, above 100 extremely poor).
+      - name: extracted_at
+        description: '{{ doc("extracted_at") }}'

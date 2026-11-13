@@ -7,6 +7,7 @@ models:
       the days that received new hourly rows. Join to dim_location for town names.
     columns:
       - name: location_code
+        description: '{{ doc("location_code") }}'
         data_tests:
           - not_null
           - relationships:
@@ -14,12 +15,22 @@ models:
                 to: ref('dim_location')
                 field: location_code
       - name: observed_date
+        description: '{{ doc("observed_date") }}'
         data_tests: [not_null]
-      - name: hours_observed
-        description: Hours aggregated for the day; below 24 for the current, partial day.
-        data_tests: [not_null]
+      - name: temp_min_c
+        description: Lowest hourly temperature of the day, °C.
+      - name: temp_max_c
+        description: Highest hourly temperature of the day, °C.
+      - name: temp_avg_c
+        description: Mean of the hourly temperatures, °C.
       - name: rain_total_mm
+        description: Total precipitation over the day, mm.
+        data_tests: [not_null]
+      - name: wind_max_kmh
+        description: Highest hourly wind speed of the day, km/h.
+      - name: hours_observed
+        description: '{{ doc("hours_observed") }}'
         data_tests: [not_null]
       - name: last_extracted_at
-        description: Latest extraction (UTC) that contributed to the row; drives incremental runs.
+        description: '{{ doc("last_extracted_at") }}'
         data_tests: [not_null]

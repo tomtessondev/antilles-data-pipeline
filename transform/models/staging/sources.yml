@@ -2,6 +2,7 @@ version: 2
 
 sources:
   - name: raw
+    description: Tables written by the Python loader with idempotent upserts on their primary key.
     schema: raw
     # The pipeline runs once a day: one missed run warns, two fail.
     freshness:
@@ -9,16 +10,28 @@ sources:
       error_after: { count: 50, period: hour }
     tables:
       - name: locations
+        description: Towns tracked by the pipeline, from the package configuration.
         freshness: null # static reference data, written by every run
         columns:
           - name: location_code
+            description: '{{ doc("location_code") }}'
             data_tests: [unique, not_null]
+          - name: name
+            description: Town name.
+          - name: territory
+            description: '{{ doc("territory") }}'
+          - name: latitude
+            description: Approximate town centre latitude (WGS84).
+          - name: longitude
+            description: Approximate town centre longitude (WGS84).
 
       - name: weather_hourly
+        description: Hourly weather from the Open-Meteo forecast API (past hours only).
         # extracted_at is naive UTC, which is what dbt assumes for freshness checks.
         loaded_at_field: extracted_at
         columns:
           - name: location_code
+            description: '{{ doc("location_code") }}'
             data_tests:
               - not_null
               - relationships:
@@ -26,13 +39,25 @@ sources:
                     to: source('raw', 'locations')
                     field: location_code
           - name: observed_at
+            description: '{{ doc("observed_at") }}'
             data_tests: [not_null]
+          - name: temperature_2m
+            description: Air temperature at 2 m, °C.
+          - name: relative_humidity_2m
+            description: Relative humidity at 2 m, percent.
+          - name: precipitation
+            description: Total precipitation over the hour, mm.
+          - name: wind_speed_10m
+            description: Wind speed at 10 m, km/h.
+          - name: extracted_at
+            description: '{{ doc("extracted_at") }}'
 
       - name: air_quality_hourly
         description: Hourly air quality from the CAMS global model, served by Open-Meteo.
         loaded_at_field: extracted_at
         columns:
           - name: location_code
+            description: '{{ doc("location_code") }}'
             data_tests:
               - not_null
               - relationships:
@@ -40,4 +65,19 @@ sources:
                     to: source('raw', 'locations')
                     field: location_code
           - name: observed_at
+            description: '{{ doc("observed_at") }}'
             data_tests: [not_null]
+          - name: pm10
+            description: Particulate matter under 10 µm, µg/m³.
+          - name: pm2_5
+            description: Particulate matter under 2.5 µm, µg/m³.
+          - name: dust
+            description: Mineral dust, µg/m³.
+          - name: ozone
+            description: Ozone, µg/m³.
+          - name: nitrogen_dioxide
+            description: Nitrogen dioxide, µg/m³.
+          - name: european_aqi
+            description: European Air Quality Index.
+          - name: extracted_at
+            description: '{{ doc("extracted_at") }}'

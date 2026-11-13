@@ -5,14 +5,20 @@ models:
     description: One row per town, with its territory and coordinates. Joins to the facts on location_code.
     columns:
       - name: location_code
+        description: '{{ doc("location_code") }}'
         data_tests: [unique, not_null]
+      - name: town
+        description: Town name.
       - name: territory
+        description: '{{ doc("territory") }}'
         data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: ["Guadeloupe", "Martinique"]
       - name: latitude
+        description: Approximate town centre latitude (WGS84).
         data_tests: [not_null]
       - name: longitude
+        description: Approximate town centre longitude (WGS84).
         data_tests: [not_null]

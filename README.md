@@ -1,6 +1,7 @@
 # Antilles Data Pipeline
 
 [![CI](https://github.com/tomtessondev/antilles-data-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/tomtessondev/antilles-data-pipeline/actions/workflows/ci.yml)
+[![dbt docs](https://img.shields.io/badge/dbt-docs-FF694B?logo=dbt&logoColor=white)](https://tomtessondev.github.io/antilles-data-pipeline/)
 
 A production-style data pipeline built on open data from **Guadeloupe and Martinique**.
 It extracts hourly weather and air quality (including Saharan dust) from the
@@ -26,6 +27,7 @@ Open-Meteo air quality ─┘        Python package                             
 | Transform | dbt-duckdb: staging views, incremental daily facts, location dimension, tests, source freshness | `transform/` |
 | Orchestration | GitHub Actions cron (daily) | `.github/workflows/pipeline.yml` |
 | Quality | pytest + respx (HTTP mocked), ruff, mypy `--strict` | `tests/`, `.github/workflows/ci.yml` |
+| Documentation | dbt docs (lineage, column descriptions, tests) on GitHub Pages | `.github/workflows/docs.yml` |
 | Packaging | pyproject, CLI entry point, Docker image | `pyproject.toml`, `Dockerfile` |
 
 ## Quick start
@@ -37,6 +39,7 @@ pip install -e ".[dev,transform]"
 antilles-pipeline run --past-days 7      # extract + load into data/antilles.duckdb
 make transform                            # dbt build (models + tests)
 make check                                # lint, type-check, tests
+make docs                                 # dbt docs as a single static HTML page
 ```
 
 With Docker:
@@ -47,6 +50,10 @@ docker run --rm -v "$PWD/data:/app/data" antilles-pipeline run --past-days 7
 ```
 
 ## Data model
+
+Browse the models, lineage graph and column descriptions in the
+[dbt docs](https://tomtessondev.github.io/antilles-data-pipeline/), rebuilt from fixture data
+on every merge to `main`.
 
 - `raw.locations`: the six towns tracked (3 in Guadeloupe, 3 in Martinique).
 - `raw.weather_hourly`, `raw.air_quality_hourly`: one row per location and hour, primary key
@@ -86,6 +93,7 @@ Full plan in [docs/ROADMAP.md](docs/ROADMAP.md).
 - [x] dbt staging and daily mart with data-quality tests
 - [x] Incremental facts, location dimension, source freshness
 - [x] Second source: air quality and Saharan dust (Open-Meteo, CAMS)
+- [x] dbt docs published on GitHub Pages
 - [ ] Orchestration with Airflow or Kestra in Docker Compose
 - [ ] Next.js dashboard reading the marts
 - [ ] Cloud deployment (BigQuery or MotherDuck) with Terraform

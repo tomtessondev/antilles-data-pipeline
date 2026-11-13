@@ -46,3 +46,6 @@ jobs:
       - name: Source freshness
         working-directory: transform
         run: dbt source freshness --profiles-dir .
+      - name: Docs generate (published from main by docs.yml)
+        working-directory: transform
+        run: dbt docs generate --profiles-dir . --static

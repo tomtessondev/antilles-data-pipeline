@@ -5,4 +5,13 @@ models:
     description: Towns tracked by the pipeline, renamed for downstream models.
     columns:
       - name: location_code
+        description: '{{ doc("location_code") }}'
         data_tests: [unique, not_null]
+      - name: town
+        description: Town name.
+      - name: territory
+        description: '{{ doc("territory") }}'
+      - name: latitude
+        description: Approximate town centre latitude (WGS84).
+      - name: longitude
+        description: Approximate town centre longitude (WGS84).
