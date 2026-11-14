@@ -34,6 +34,11 @@ more than feature count. Every change should be something a recruiter can read.
   `docker-compose.yml` (webserver on host port 3070 + daemon + SeaweedFS as local S3 on 8333;
   MinIO images are no longer published)
 - S3 tests use a moto server over HTTP (`tests/test_lake.py`), never real AWS
+- Terraform in `infra/` (AWS account on the free plan, locked to `us-east-2`; its
+  organisation denies OIDC providers, hence `ci_auth = "iam_user"`). Run with
+  `AWS_PROFILE=antilles`; `terraform plan` freely, `apply`/`destroy` only after the owner
+  approves the plan. The daily workflow reads repository variables `AWS_AUTH`,
+  `AWS_REGION`, `LAKE_S3_URL` and secrets `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`.
 - Next.js dashboard in `dashboard/` (App Router, Cache Components, Tailwind, Recharts).
   Reads `MARTS_URL` (the `data` branch `marts.json` in production) or the bundled
   `dashboard/data/sample.json`. `dashboard/src/lib/schema.ts` is the export contract:

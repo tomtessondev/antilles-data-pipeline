@@ -31,6 +31,7 @@ Open-Meteo air quality ─┘                                  extraction date  
 | Documentation | dbt docs (lineage, column descriptions, tests) on GitHub Pages | `.github/workflows/docs.yml` |
 | Serve | `antilles-pipeline export` to JSON; Next.js, TypeScript, Recharts, zod-validated contract | `src/antilles_pipeline/export.py`, `dashboard/` |
 | Packaging | pyproject, CLI entry point, multi-stage Docker image (CLI and Dagster targets) | `pyproject.toml`, `Dockerfile` |
+| Infrastructure | Terraform on AWS (`us-east-2`): S3 lake, remote state with native locking, least-privilege CI identity, budget alert | `infra/` |
 
 ### Orchestration
 
@@ -151,8 +152,12 @@ between two neighbouring towns are smoothing, not local measurements.
 - **DuckDB does the I/O**: it writes the Parquet partitions and reads them back over S3
   (httpfs), so there is no pandas or pyarrow step. Tests run the S3 path against a moto
   server, Docker Compose against SeaweedFS (MinIO no longer publishes images).
-- **No long-lived AWS keys in CI**: the daily workflow assumes an IAM role through GitHub
-  OIDC when the `AWS_ROLE_ARN` and `ANTILLES_LAKE_URL` repository variables are set.
+- **Least-privilege CI access to AWS.** The daily run can list the lake, read and add
+  files, nothing else (no delete, no other bucket). The intended setup is an IAM role
+  assumed through GitHub OIDC from `main` only, with no stored keys. The AWS free plan
+  denies creating OIDC providers, so this account uses a dedicated IAM user with the same
+  policy and a key kept in GitHub secrets; switching back is one Terraform variable
+  (`ci_auth`). Details in [infra/README.md](infra/README.md).
 - **Idempotent loads**: re-running a day never duplicates rows (`insert or replace` on the key).
 - **Past hours only**: the forecast endpoint also returns the rest of today as predictions;
   hours after the extraction time are dropped. `observed_at` is local Antilles time (UTC−4),
@@ -180,9 +185,8 @@ Full plan in [docs/ROADMAP.md](docs/ROADMAP.md).
 - [x] dbt docs published on GitHub Pages
 - [x] Next.js dashboard reading the marts
 - [x] Orchestration with Dagster, run locally with Docker Compose
-- [x] Raw data as partitioned Parquet on S3, queried from DuckDB (code, tests, local S3;
-      the real bucket comes with Terraform)
-- [ ] Infrastructure as code with Terraform
+- [x] Raw data as partitioned Parquet on S3, queried from DuckDB
+- [x] Infrastructure as code with Terraform (S3 lake, IAM, remote state, budget)
 
 ## Author
 
