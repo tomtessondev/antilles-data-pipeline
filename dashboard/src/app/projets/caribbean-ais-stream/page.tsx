@@ -60,9 +60,9 @@ const ROADMAP: { step: string; status: Status; detail: string }[] = [
   },
   {
     step: "2. Flink SQL",
-    status: "en cours",
+    status: "fait",
     detail:
-      "Fenêtres en temps d'événement avec watermarks (navires par zone portuaire toutes les 5 minutes, vitesse moyenne par couloir), arrivées et départs aux ports par géorepérage, résultats dans PostgreSQL via le connecteur JDBC.",
+      "Fenêtres en temps d'événement avec watermark de 30 s : navires par zone portuaire toutes les 5 minutes et une ligne par navire et par heure, écrites dans PostgreSQL par upsert. Un test de bout en bout en CI relance le job depuis le début de Kafka et vérifie que les résultats sont identiques.",
   },
   {
     step: "3. Anomalies",
@@ -120,7 +120,7 @@ const TECHNOLOGIES: { name: string; role: string; why: string; alternatives: str
     alternatives: "Redpanda (compatible Kafka, plus léger), Pulsar, Kinesis.",
   },
   {
-    name: "Apache Flink 1.20 (à venir)",
+    name: "Apache Flink 1.20",
     role: "Traitement continu : fenêtres, jointures, détection d'événements.",
     why: "Le moteur de référence du temps d'événement (watermarks), en SQL. Avec Kafka, c'est la paire la plus demandée en mission ; Redpanda aurait été plus simple à faire tourner, mais moins représentatif.",
     alternatives: "Kafka Streams, Spark Structured Streaming, RisingWave.",
@@ -290,8 +290,8 @@ export default function CaribbeanAisStreamPage() {
         <p className="text-ink-secondary">
           Les navires de commerce et de passagers diffusent leur position par radio toutes les quelques
           secondes. Ce projet capte ces messages autour de la Guadeloupe, de la Martinique et des îles
-          voisines, les nettoie et les publie dans Kafka, puis (étape en cours) les traite en continu
-          avec Flink.
+          voisines, les nettoie et les publie dans Kafka, puis les traite en continu avec Flink :
+          activité des ports toutes les 5 minutes et statistiques horaires par navire.
         </p>
         <p className="text-sm">
           <a href={REPO} className="font-medium underline">
@@ -388,8 +388,8 @@ export default function CaribbeanAisStreamPage() {
               écrit deux fois. Le rappel de livraison compte les succès et les échecs.
             </li>
             <li>
-              Le message est dans le journal pendant 7 jours. Kafka UI le montre, et Flink le lira (étape
-              2).
+              Le message est dans le journal pendant 7 jours. Kafka UI le montre, et Flink le lit pour
+              alimenter les fenêtres de port et les statistiques horaires dans PostgreSQL.
             </li>
           </ol>
         </Prose>
