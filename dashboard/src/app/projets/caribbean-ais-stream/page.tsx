@@ -66,9 +66,9 @@ const ROADMAP: { step: string; status: Status; detail: string }[] = [
   },
   {
     step: "3. Anomalies",
-    status: "à venir",
+    status: "fait",
     detail:
-      "Navires qui « s'éteignent » (silence AIS plus long que d'habitude, fenêtres de session), sauts de vitesse ou de position physiquement impossibles, navires qui tournent en rond.",
+      "Navires qui « s'éteignent » (fenêtres de session de 15 minutes, puis fin du silence par détection de motifs), sauts de position physiquement impossibles (MATCH_RECOGNIZE), arrivées et départs aux ports. Plus tard : les navires qui tournent en rond, et un seuil de silence adapté au rythme de chaque navire.",
   },
   {
     step: "4. Carte et métriques",
@@ -259,7 +259,7 @@ const LESSONS: { title: string; text: string }[] = [
   },
   {
     title: "Développer sans compte",
-    text: "Le générateur écrit le format exact d'aisstream : la démo et le rejeu passent par le même code que le flux réel. Il contient un navire qui coupe son AIS 45 minutes, le cas que la détection d'anomalies devra trouver.",
+    text: "Le générateur écrit le format exact d'aisstream : la démo et le rejeu passent par le même code que le flux réel. Il contient un navire qui coupe son AIS 45 minutes et un autre qui émet une fausse position : chaque détection d'anomalie a un cas à trouver.",
   },
   {
     title: "Une clé invalide arrête le producteur",
@@ -389,11 +389,47 @@ export default function CaribbeanAisStreamPage() {
             </li>
             <li>
               Le message est dans le journal pendant 7 jours. Kafka UI le montre, et Flink le lit pour
-              alimenter les fenêtres de port et les statistiques horaires dans PostgreSQL.
+              alimenter les fenêtres de port, les statistiques horaires et les anomalies dans
+              PostgreSQL.
             </li>
           </ol>
         </Prose>
         <TrafficMap />
+      </Section>
+
+      <Section id="anomalies" title="Détection d'anomalies">
+        <Prose>
+          <p>
+            Flink surveille chaque navire en continu, sur l&apos;heure d&apos;émission des positions, et
+            écrit chaque anomalie dans PostgreSQL dès qu&apos;elle est certaine.
+          </p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              <strong>Navire qui s&apos;éteint</strong> : une <em>fenêtre de session</em> par navire se
+              ferme après 15 minutes sans position, et c&apos;est l&apos;alerte. Un navire en route émet
+              toutes les quelques secondes, un navire à quai toutes les 3 minutes : 15 minutes, c&apos;est au
+              moins cinq messages manqués. Quand il réapparaît, une détection de motifs (deux positions
+              à plus de 15 minutes d&apos;écart) enregistre la fin et la durée du silence.
+            </li>
+            <li>
+              <strong>Saut impossible</strong> : deux positions consécutives à plus d&apos;un mille
+              l&apos;une de l&apos;autre, à une vitesse implicite de plus de 60 nœuds (les ferries rapides
+              font environ 40). C&apos;est le signe d&apos;une position falsifiée ou corrompue.
+            </li>
+            <li>
+              <strong>Arrivée et départ</strong> : un navire qui passe de l&apos;extérieur à
+              l&apos;intérieur d&apos;une zone portuaire, ou l&apos;inverse. Un navire déjà au port quand
+              on commence à l&apos;observer n&apos;a pas d&apos;arrivée.
+            </li>
+          </ul>
+          <p>
+            La fin du silence, les sauts et les passages au port utilisent{" "}
+            <Code>MATCH_RECOGNIZE</Code>, la recherche de
+            motifs de SQL : on décrit une suite de lignes (« une position, puis une position trop
+            loin ») et Flink la cherche dans le flux de chaque navire. Limite connue : sur le flux réel,
+            un navire qui sort de la zone couverte cesse aussi d&apos;émettre et apparaît éteint.
+          </p>
+        </Prose>
       </Section>
 
       <Section id="technologies" title="Les technologies">
@@ -467,9 +503,16 @@ ais-stream replay data/sample.jsonl --bootstrap localhost:9094`}</Block>
               produite et relue : aucune perte, et pour chaque navire des positions dans l&apos;ordre.
             </li>
             <li>
+              <strong>De bout en bout</strong> : quatre heures de trafic synthétique traversent Kafka,
+              Flink et PostgreSQL. Les tests attendent exactement le silence de 45 minutes du navire
+              sombre, les deux sauts de la position falsifiée, les douze arrivées et départs, et aucune
+              fausse alerte pour les autres navires. Ils relancent ensuite le job depuis le début de
+              Kafka et vérifient que toutes les tables sont identiques.
+            </li>
+            <li>
               <strong>À chaque pull request</strong>, GitHub Actions lance le lint, le typage strict, les
-              tests unitaires (Python 3.12 et 3.13), les tests d&apos;intégration et le build de
-              l&apos;image Docker.
+              tests unitaires (Python 3.12 et 3.13), les tests d&apos;intégration, les tests de bout en
+              bout et le build de l&apos;image Docker.
             </li>
           </ul>
         </Prose>
