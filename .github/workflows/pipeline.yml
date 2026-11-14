@@ -15,17 +15,26 @@ jobs:
     env:
       ANTILLES_DB_PATH: ${{ github.workspace }}/data/antilles.duckdb
       ANTILLES_EXPORT_PATH: ${{ github.workspace }}/data/marts.json
-      # Repository variable s3://<bucket> once the bucket exists; until then a throwaway
-      # directory on the runner, so each run only sees its own extraction.
-      ANTILLES_LAKE_URL: ${{ vars.ANTILLES_LAKE_URL || format('{0}/data/lake', github.workspace) }}
+      # The S3 lake created by infra/ (terraform output lake_url). Without the variable, a
+      # throwaway directory on the runner, so a run only sees its own extraction.
+      ANTILLES_LAKE_URL: ${{ vars.LAKE_S3_URL || format('{0}/data/lake', github.workspace) }}
     steps:
       - uses: actions/checkout@v4
-      - name: AWS credentials for the lake (assumed role, no stored keys)
-        if: vars.AWS_ROLE_ARN != ''
+      # infra/ variable ci_auth picks one of the two steps below (repository variable AWS_AUTH).
+      - name: AWS credentials for the lake (OIDC role, no stored keys)
+        if: vars.AWS_AUTH == 'oidc'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'eu-west-3' }}
+          aws-region: ${{ vars.AWS_REGION }}
+      # Free-plan accounts deny OIDC providers: a dedicated IAM user limited to the lake.
+      - name: AWS credentials for the lake (IAM user, bucket-only permissions)
+        if: vars.AWS_AUTH == 'iam_user'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
