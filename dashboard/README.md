@@ -36,5 +36,8 @@ day is always partial.
 
 ## Deploy (Vercel)
 
+Live at https://antilles-data-pipeline.vercel.app/ (production follows `main`, every pull
+request touching the dashboard gets a preview URL).
+
 Import the repository, set **Root Directory** to `dashboard` and add the `MARTS_URL`
 environment variable above. No other configuration is needed.
