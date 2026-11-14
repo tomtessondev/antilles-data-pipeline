@@ -24,6 +24,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Antilles weather &amp; air quality
             </Link>
             <nav className="flex gap-4 text-sm text-ink-secondary">
+              <Link href="/projets" className="hover:text-ink">
+                Projets
+              </Link>
               <a href={DOCS_URL} className="hover:text-ink">
                 Data model
               </a>
