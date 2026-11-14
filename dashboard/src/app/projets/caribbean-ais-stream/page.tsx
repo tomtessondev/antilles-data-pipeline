@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import type { ReactNode } from "react";
+
+import aisTraffic from "./_images/ais-traffic.png";
+import shipsGif from "./_images/ships.gif";
+import streamHealth from "./_images/stream-health.png";
 
 import { ArchitectureDiagram } from "./_components/architecture";
 import { CompactionDiagram, PartitionsDiagram } from "./_components/partitions";
@@ -72,8 +77,9 @@ const ROADMAP: { step: string; status: Status; detail: string }[] = [
   },
   {
     step: "4. Carte et métriques",
-    status: "à venir",
-    detail: "Carte en direct des navires et de l'activité des ports, retard des consommateurs, débit.",
+    status: "fait",
+    detail:
+      "Grafana configuré dans le dépôt : carte de la dernière position de chaque navire avec ses anomalies, activité et passages aux ports. Prometheus avec un exporteur Kafka et les métriques de Flink : débit, retard du consommateur, retard du watermark. Captures et GIF tirés d'un rejeu accéléré.",
   },
   {
     step: "5. Schémas",
@@ -132,8 +138,20 @@ const TECHNOLOGIES: { name: string; role: string; why: string; alternatives: str
     alternatives: "Redpanda Console, AKHQ.",
   },
   {
+    name: "Grafana 12",
+    role: "Carte des navires et tableaux de bord, configurés dans le dépôt (sources de données, tableaux en JSON).",
+    why: "Le panneau carte lit directement PostgreSQL ; tout est versionné et chaque requête est testée.",
+    alternatives: "Superset, Kepler.gl, une page web sur mesure.",
+  },
+  {
+    name: "Prometheus",
+    role: "Collecte les métriques de Kafka (exporteur) et de Flink (reporter intégré).",
+    why: "Le standard des métriques ; le lag vu du broker reste mesurable quand le job est arrêté.",
+    alternatives: "InfluxDB, Datadog, le seul tableau de bord de Flink.",
+  },
+  {
     name: "Docker Compose",
-    role: "Lance Kafka, la création des topics, la démo et Kafka UI d'une commande.",
+    role: "Lance Kafka, Flink, PostgreSQL, Grafana, Prometheus et la démo d'une commande.",
     why: "Tout l'environnement reproductible sur un portable.",
     alternatives: "Kubernetes (surdimensionné ici).",
   },
@@ -430,6 +448,49 @@ export default function CaribbeanAisStreamPage() {
             un navire qui sort de la zone couverte cesse aussi d&apos;émettre et apparaît éteint.
           </p>
         </Prose>
+      </Section>
+
+      <Section id="carte" title="Carte et métriques">
+        <Prose>
+          <p>
+            Grafana montre les navires à leur dernière position : en rouge un navire éteint, en orange
+            un saut impossible, en bleu à quai ou au mouillage, en vert en route. Le GIF vient d&apos;un
+            rejeu de six heures de trafic accéléré soixante fois : on y voit BLUE MERIDIAN passer au
+            rouge pendant son silence de 45 minutes.
+          </p>
+        </Prose>
+        <Image
+          src={shipsGif}
+          alt="Carte Grafana des Petites Antilles : les navires se déplacent entre la Guadeloupe, la Dominique, la Martinique et Sainte-Lucie ; l'un passe au rouge quand son AIS se tait."
+          unoptimized
+          className="h-auto w-full max-w-[720px] rounded-lg border border-border"
+        />
+        <Prose>
+          <p>
+            Le tableau de bord du trafic regroupe la carte, les navires éteints, les derniers sauts, les
+            arrivées et départs et le nombre de navires par port. Les panneaux « latest » se calent sur
+            la position la plus récente reçue, pas sur l&apos;horloge : ils restent justes pendant un
+            rejeu. Grafana lit PostgreSQL avec un rôle qui ne peut que lire.
+          </p>
+        </Prose>
+        <Image
+          src={aisTraffic}
+          alt="Tableau de bord AIS traffic : carte, navires éteints, arrivées et départs, navires par port."
+          className="h-auto w-full rounded-lg border border-border"
+        />
+        <Prose>
+          <p>
+            Le tableau de bord de santé du flux vient de Prometheus : messages par seconde par topic,
+            retard du consommateur Flink par partition (vu du broker, il reste mesurable si le job
+            s&apos;arrête ; Flink valide ses offsets à chaque checkpoint, d&apos;où les marches de 30
+            secondes), positions lues par Flink et retard du watermark sur l&apos;horloge.
+          </p>
+        </Prose>
+        <Image
+          src={streamHealth}
+          alt="Tableau de bord Stream health : débit par topic, retard du consommateur par partition, positions lues par seconde, retard du watermark."
+          className="h-auto w-full rounded-lg border border-border"
+        />
       </Section>
 
       <Section id="technologies" title="Les technologies">
