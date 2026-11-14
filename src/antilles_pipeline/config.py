@@ -61,6 +61,11 @@ class Settings:
             "ANTILLES_AIR_QUALITY_API", "https://air-quality-api.open-meteo.com/v1/air-quality"
         )
     )
+    # Raw landing zone: a local directory, or s3://bucket[/prefix]. S3 credentials come from
+    # the standard AWS_* variables, never from here.
+    lake_url: str = field(default_factory=lambda: os.getenv("ANTILLES_LAKE_URL", "data/lake"))
+    # Only for S3-compatible stores such as MinIO, e.g. http://localhost:9000.
+    s3_endpoint: str | None = field(default_factory=lambda: os.getenv("ANTILLES_S3_ENDPOINT"))
     timezone: str = "America/Guadeloupe"
     timeout_seconds: float = 30.0
     locations: tuple[Location, ...] = DEFAULT_LOCATIONS

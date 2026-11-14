@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write # push the marts export to the data branch
+  id-token: write # OIDC token exchanged for short-lived AWS credentials
 
 jobs:
   run:
@@ -14,8 +15,17 @@ jobs:
     env:
       ANTILLES_DB_PATH: ${{ github.workspace }}/data/antilles.duckdb
       ANTILLES_EXPORT_PATH: ${{ github.workspace }}/data/marts.json
+      # Repository variable s3://<bucket> once the bucket exists; until then a throwaway
+      # directory on the runner, so each run only sees its own extraction.
+      ANTILLES_LAKE_URL: ${{ vars.ANTILLES_LAKE_URL || format('{0}/data/lake', github.workspace) }}
     steps:
       - uses: actions/checkout@v4
+      - name: AWS credentials for the lake (assumed role, no stored keys)
+        if: vars.AWS_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'eu-west-3' }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -24,8 +34,8 @@ jobs:
       - name: Parse the dbt project (the Dagster dbt assets are built from the manifest)
         working-directory: transform
         run: dbt parse --profiles-dir .
-      # The same Dagster job that the Docker Compose stack schedules: extract and load
-      # (31 days, since each run starts from an empty database), dbt build, JSON export.
+      # The same Dagster job that the Docker Compose stack schedules: extract 31 days into
+      # the lake, rebuild the raw tables from the whole lake, dbt build, JSON export.
       - name: Run the daily Dagster job
         run: dagster job execute -m antilles_pipeline.orchestration.definitions -j daily_pipeline
       - name: Source freshness

@@ -1,17 +1,52 @@
 # Local orchestration: Dagster UI on http://localhost:3070, daily schedule run by the daemon.
-# The DuckDB file and the JSON export land in ./data on the host.
+# The lake lives in an S3-compatible store (SeaweedFS), the DuckDB file and the JSON export
+# in ./data on the host.
 
 x-dagster: &dagster
   build:
     context: .
     target: dagster
   image: antilles-pipeline-dagster
+  environment:
+    ANTILLES_LAKE_URL: s3://antilles-lake
+    ANTILLES_S3_ENDPOINT: http://s3:8333
+    # SeaweedFS runs without identities locally, so any key is accepted.
+    AWS_ACCESS_KEY_ID: local
+    AWS_SECRET_ACCESS_KEY: local
+    AWS_REGION: us-east-1
   volumes:
     - ./data:/data
     - dagster_home:/opt/dagster/home
+  depends_on:
+    create-bucket:
+      condition: service_completed_successfully
   restart: unless-stopped
 
 services:
+  s3:
+    # MinIO no longer publishes images; SeaweedFS speaks the same S3 API.
+    image: chrislusf/seaweedfs:4.05
+    command: ["server", "-dir=/data", "-s3"]
+    ports:
+      - "8333:8333"
+    volumes:
+      - lake:/data
+
+  create-bucket:
+    image: amazon/aws-cli:2.31.0
+    environment:
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_REGION: us-east-1
+    entrypoint:
+      - sh
+      - -c
+      - |
+        until aws --endpoint-url http://s3:8333 s3 ls > /dev/null 2>&1; do sleep 1; done
+        aws --endpoint-url http://s3:8333 s3 mb s3://antilles-lake || true
+    depends_on:
+      - s3
+
   webserver:
     <<: *dagster
     command:
@@ -23,8 +58,7 @@ services:
   daemon:
     <<: *dagster
     command: ["dagster-daemon", "run", "-m", "antilles_pipeline.orchestration.definitions"]
-    depends_on:
-      - webserver
 
 volumes:
   dagster_home:
+  lake:

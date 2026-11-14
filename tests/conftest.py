@@ -27,6 +27,8 @@ def air_quality_payload() -> dict[str, Any]:
 def settings(tmp_path: Path) -> Settings:
     return Settings(
         db_path=tmp_path / "test.duckdb",
+        lake_url=str(tmp_path / "lake"),
+        s3_endpoint=None,
         api_base_url=API_URL,
         air_quality_api_url=AIR_QUALITY_URL,
         locations=DEFAULT_LOCATIONS[:2],

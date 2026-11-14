@@ -13,17 +13,18 @@ typed and tested Python, idempotent loads, retries, data-quality tests, CI/CD an
 ## Architecture
 
 ```
-Open-Meteo weather ─────┐
-                        ├─► extract (httpx + retries) ──► DuckDB raw.* ──► dbt staging ──► dbt marts
-Open-Meteo air quality ─┘        Python package                              (tests)          │
-                                                                                              ▼
-                       Next.js dashboard ◄── marts.json on the `data` branch ◄── export (daily)
+Open-Meteo weather ─────┐                         lake: S3, Parquet
+                        ├─► extract (httpx + retries) ──► partitioned by ──► DuckDB raw.* ──► dbt staging ──► dbt marts
+Open-Meteo air quality ─┘                                  extraction date     (latest wins)      (tests)         │
+                                                                                                                 ▼
+                                          Next.js dashboard ◄── marts.json on the `data` branch ◄── export (daily)
 ```
 
 | Layer | Tooling | Where |
 | --- | --- | --- |
 | Extract | Python 3.11+, httpx, tenacity (exponential retries) | `src/antilles_pipeline/extract.py` |
-| Load | DuckDB, idempotent upserts on `(location, hour)` | `src/antilles_pipeline/load.py` |
+| Land | Every extraction appended as Parquet to S3 (or a local directory), Hive-partitioned by extraction date, written by DuckDB | `src/antilles_pipeline/lake.py` |
+| Load | DuckDB rebuilds the raw tables from the whole lake, latest extraction per `(location, hour)` | `src/antilles_pipeline/lake.py`, `load.py` |
 | Transform | dbt-duckdb: staging views, incremental daily facts, location dimension, tests, source freshness | `transform/` |
 | Orchestration | Dagster assets (dbt models as assets, dbt tests as asset checks), retries, daily schedule; run by Docker Compose locally and by a GitHub Actions cron in production | `src/antilles_pipeline/orchestration/`, `docker-compose.yml`, `.github/workflows/pipeline.yml` |
 | Quality | pytest + respx (HTTP mocked), ruff, mypy `--strict` | `tests/`, `.github/workflows/ci.yml` |
@@ -38,6 +39,12 @@ sources, so the graph connects from the APIs to the dashboard file without glue 
 
 ```mermaid
 flowchart LR
+  subgraph lake
+    lw[lake/weather_hourly]
+    la[lake/air_quality_hourly]
+  end
+  lw --> weather
+  la --> air
   subgraph raw
     locations[raw/locations]
     weather[raw/weather_hourly]
@@ -84,12 +91,17 @@ make docs                                 # dbt docs as a single static HTML pag
 make dagster                              # Dagster UI with hot reload (dagster dev)
 ```
 
-Orchestration with Docker Compose (Dagster webserver and daemon, data in `./data`):
+Orchestration with Docker Compose: Dagster webserver and daemon, the lake in a local
+S3-compatible store (SeaweedFS, bucket `antilles-lake`), DuckDB and the export in `./data`:
 
 ```bash
 make up                                   # http://localhost:3070, daily schedule on
 make down
 ```
+
+Without Compose, the lake is `data/lake` on disk. Point `ANTILLES_LAKE_URL` at
+`s3://<bucket>[/prefix]` to use S3, with the usual `AWS_*` credentials
+(`ANTILLES_S3_ENDPOINT` only for S3-compatible stores).
 
 Dashboard (reads the bundled sample unless `MARTS_URL` is set):
 
@@ -129,13 +141,25 @@ between two neighbouring towns are smoothing, not local measurements.
 
 ## Design choices
 
+- **An append-only lake as the source of truth.** Each run re-sends the last 31 days, so
+  the same hour arrives in several extractions. The lake keeps all of them, untouched,
+  partitioned by extraction date; loading picks the latest per `(location, hour)`. The
+  DuckDB file is disposable: any run rebuilds the raw tables, with the full history, from
+  the lake. Partitioning by extraction date rather than observation date keeps writes
+  append-only (a run never rewrites an existing file) at the cost of reading every file on
+  load, which stays small here (a few MB a year).
+- **DuckDB does the I/O**: it writes the Parquet partitions and reads them back over S3
+  (httpfs), so there is no pandas or pyarrow step. Tests run the S3 path against a moto
+  server, Docker Compose against SeaweedFS (MinIO no longer publishes images).
+- **No long-lived AWS keys in CI**: the daily workflow assumes an IAM role through GitHub
+  OIDC when the `AWS_ROLE_ARN` and `ANTILLES_LAKE_URL` repository variables are set.
 - **Idempotent loads**: re-running a day never duplicates rows (`insert or replace` on the key).
 - **Past hours only**: the forecast endpoint also returns the rest of today as predictions;
   hours after the extraction time are dropped. `observed_at` is local Antilles time (UTC−4),
   `extracted_at` is UTC.
 - **Retries with backoff** on network errors and 5xx answers; a malformed payload fails loudly.
-- **Config by environment variables** (`ANTILLES_DB_PATH`, `ANTILLES_WEATHER_API`,
-  `ANTILLES_AIR_QUALITY_API`), no secrets in code.
+- **Config by environment variables** (`ANTILLES_DB_PATH`, `ANTILLES_LAKE_URL`,
+  `ANTILLES_WEATHER_API`, `ANTILLES_AIR_QUALITY_API`), no secrets in code.
 - **Tests never hit the network**: the APIs are mocked with respx and JSON fixtures.
 - **Dashboard without a database server**: the daily run exports the marts to one JSON
   file on the `data` branch (a single commit, replaced each run). The dashboard fetches it
@@ -156,7 +180,8 @@ Full plan in [docs/ROADMAP.md](docs/ROADMAP.md).
 - [x] dbt docs published on GitHub Pages
 - [x] Next.js dashboard reading the marts
 - [x] Orchestration with Dagster, run locally with Docker Compose
-- [ ] Raw data as partitioned Parquet on S3, queried from DuckDB
+- [x] Raw data as partitioned Parquet on S3, queried from DuckDB (code, tests, local S3;
+      the real bucket comes with Terraform)
 - [ ] Infrastructure as code with Terraform
 
 ## Author

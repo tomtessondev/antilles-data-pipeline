@@ -1,7 +1,8 @@
-"""Assets: raw tables loaded by Python, dbt models, and the JSON export for the dashboard.
+"""Assets: lake files, raw tables, dbt models, and the JSON export for the dashboard.
 
-Raw assets use the keys dbt gives its sources (`raw/<table>`), so Dagster draws one lineage
-graph from the APIs to the dashboard file.
+Extraction appends Parquet files to the lake (`lake/<source>`); the raw DuckDB tables are
+rebuilt from the whole lake. Raw assets use the keys dbt gives its sources (`raw/<table>`),
+so Dagster draws one lineage graph from the APIs to the dashboard file.
 """
 
 # No `from __future__ import annotations` here: Dagster reads the config and context
@@ -13,6 +14,7 @@ from typing import Any
 
 from dagster import (
     AssetExecutionContext,
+    AssetKey,
     Backoff,
     Config,
     MaterializeResult,
@@ -29,8 +31,14 @@ from dagster_dbt import (
 
 from antilles_pipeline.config import Settings
 from antilles_pipeline.export import write_export
-from antilles_pipeline.extract import extract_air_quality, extract_weather
-from antilles_pipeline.load import connect, load_air_quality, load_locations, load_weather
+from antilles_pipeline.extract import (
+    AirQualityRecord,
+    WeatherRecord,
+    extract_air_quality,
+    extract_weather,
+)
+from antilles_pipeline.lake import attach_lake, load_from_lake, write_to_lake
+from antilles_pipeline.load import connect, load_locations
 
 # The package is installed editable in development; the Docker image sets the variable.
 DBT_PROJECT_DIR = Path(
@@ -63,42 +71,78 @@ def locations() -> MaterializeResult[None]:
     return MaterializeResult(metadata={"rows": len(settings.locations)})
 
 
+def _land(
+    source: str, records: list[WeatherRecord] | list[AirQualityRecord], past_days: int
+) -> MaterializeResult[None]:
+    settings = Settings()
+    con = connect(settings.db_path)
+    try:
+        attach_lake(con, settings)
+        rows = write_to_lake(con, settings, source, records)
+    finally:
+        con.close()
+    return MaterializeResult(
+        metadata={"rows": rows, "past_days": past_days, "lake_url": settings.lake_url}
+    )
+
+
+def _rebuild(source: str) -> MaterializeResult[None]:
+    settings = Settings()
+    con = connect(settings.db_path)
+    try:
+        attach_lake(con, settings)
+        rows = load_from_lake(con, settings, source)
+    finally:
+        con.close()
+    return MaterializeResult(metadata={"rows": rows})
+
+
 @asset(
-    key_prefix="raw",
-    group_name="raw",
-    deps=[locations],
+    key=AssetKey(["lake", "weather_hourly"]),
+    group_name="lake",
     retry_policy=API_RETRY,
-    kinds={"python", "duckdb"},
+    kinds={"python", "parquet", "s3"},
 )
-def weather_hourly(config: ExtractConfig) -> MaterializeResult[None]:
-    """Hourly weather from the Open-Meteo forecast API, past hours only, upserted."""
+def lake_weather_hourly(config: ExtractConfig) -> MaterializeResult[None]:
+    """Hourly weather from the Open-Meteo forecast API (past hours), appended to the lake."""
     settings = Settings()
     records = extract_weather(settings, past_days=config.past_days)
-    con = connect(settings.db_path)
-    try:
-        rows = load_weather(con, records)
-    finally:
-        con.close()
-    return MaterializeResult(metadata={"rows": rows, "past_days": config.past_days})
+    return _land("weather_hourly", records, config.past_days)
 
 
 @asset(
-    key_prefix="raw",
-    group_name="raw",
-    deps=[locations],
+    key=AssetKey(["lake", "air_quality_hourly"]),
+    group_name="lake",
     retry_policy=API_RETRY,
-    kinds={"python", "duckdb"},
+    kinds={"python", "parquet", "s3"},
 )
-def air_quality_hourly(config: ExtractConfig) -> MaterializeResult[None]:
-    """Hourly air quality (CAMS) from the Open-Meteo air-quality API, upserted."""
+def lake_air_quality_hourly(config: ExtractConfig) -> MaterializeResult[None]:
+    """Hourly air quality (CAMS) from the Open-Meteo air-quality API, appended to the lake."""
     settings = Settings()
     records = extract_air_quality(settings, past_days=config.past_days)
-    con = connect(settings.db_path)
-    try:
-        rows = load_air_quality(con, records)
-    finally:
-        con.close()
-    return MaterializeResult(metadata={"rows": rows, "past_days": config.past_days})
+    return _land("air_quality_hourly", records, config.past_days)
+
+
+@asset(
+    key=AssetKey(["raw", "weather_hourly"]),
+    group_name="raw",
+    deps=[locations, lake_weather_hourly],
+    kinds={"duckdb"},
+)
+def raw_weather_hourly() -> MaterializeResult[None]:
+    """raw.weather_hourly rebuilt from every extraction in the lake, latest wins."""
+    return _rebuild("weather_hourly")
+
+
+@asset(
+    key=AssetKey(["raw", "air_quality_hourly"]),
+    group_name="raw",
+    deps=[locations, lake_air_quality_hourly],
+    kinds={"duckdb"},
+)
+def raw_air_quality_hourly() -> MaterializeResult[None]:
+    """raw.air_quality_hourly rebuilt from every extraction in the lake, latest wins."""
+    return _rebuild("air_quality_hourly")
 
 
 class FolderGroups(DagsterDbtTranslator):

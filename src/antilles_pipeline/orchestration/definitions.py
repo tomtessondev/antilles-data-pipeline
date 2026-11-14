@@ -13,12 +13,14 @@ from dagster import (
 from dagster_dbt import DbtCliResource
 
 from antilles_pipeline.orchestration.assets import (
-    air_quality_hourly,
     antilles_dbt,
     dbt_project,
+    lake_air_quality_hourly,
+    lake_weather_hourly,
     locations,
     marts_json,
-    weather_hourly,
+    raw_air_quality_hourly,
+    raw_weather_hourly,
 )
 
 # Every step writes the same DuckDB file, which allows a single writer: run the steps one
@@ -27,7 +29,7 @@ daily_pipeline = define_asset_job(
     "daily_pipeline",
     selection=AssetSelection.all(),
     executor_def=in_process_executor,
-    description="Extract, load, dbt build (models + tests) and JSON export.",
+    description="Extract to the lake, rebuild raw tables, dbt build (models + tests), export.",
 )
 
 daily_schedule = ScheduleDefinition(
@@ -38,7 +40,15 @@ daily_schedule = ScheduleDefinition(
 )
 
 defs = Definitions(
-    assets=[locations, weather_hourly, air_quality_hourly, antilles_dbt, marts_json],
+    assets=[
+        locations,
+        lake_weather_hourly,
+        lake_air_quality_hourly,
+        raw_weather_hourly,
+        raw_air_quality_hourly,
+        antilles_dbt,
+        marts_json,
+    ],
     jobs=[daily_pipeline],
     schedules=[daily_schedule],
     resources={"dbt": DbtCliResource(project_dir=dbt_project)},
