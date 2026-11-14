@@ -3,7 +3,7 @@ import { ArrowMarker, Box, Figure } from "./diagram";
 const W = 960;
 const H = 360;
 
-/** Sources → normalisation → keyed producer → three topics → Flink SQL → PostgreSQL. */
+/** Sources → normalisation → keyed producer → three topics → Flink SQL (windows, pattern matching) → PostgreSQL. */
 export function ArchitectureDiagram() {
   const arrow = "url(#ais-arch-arrow)";
   return (
@@ -28,8 +28,8 @@ export function ArchitectureDiagram() {
         <Box x={700} y={112} w={240} h={64} title="ais.ships" lines={["compacté : dernière fiche", "de chaque navire"]} accent="var(--series-1)" />
         <Box x={700} y={190} w={240} h={64} title="ais.dlq" lines={["messages rejetés, tels quels", "14 jours"]} accent="var(--series-2)" />
 
-        <Box x={474} y={282} w={180} h={64} title="Flink SQL" lines={["fenêtres 5 min et 1 h", "watermark 30 s"]} accent="var(--series-1)" />
-        <Box x={700} y={282} w={240} h={64} title="PostgreSQL" lines={["port_activity, ship_hourly", "upsert sur clé primaire"]} accent="var(--series-1)" />
+        <Box x={474} y={282} w={180} h={64} title="Flink SQL" lines={["fenêtres, motifs", "watermark 30 s"]} accent="var(--series-1)" />
+        <Box x={700} y={282} w={240} h={64} title="PostgreSQL" lines={["activité, stats, anomalies", "upsert sur clé primaire"]} accent="var(--series-1)" />
 
         <g stroke="var(--ink-muted)" strokeWidth={1.5} fill="none">
           <path d="M206 66 C228 66 228 130 248 130" markerEnd={arrow} />

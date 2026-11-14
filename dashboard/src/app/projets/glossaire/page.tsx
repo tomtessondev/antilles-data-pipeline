@@ -64,6 +64,7 @@ const GROUPS: { title: string; terms: Term[] }[] = [
       { term: "Flink", definition: "Moteur de calcul sur flux : agrège et détecte des motifs dans des événements en continu, en SQL ou en code." },
       { term: "Temps de l’événement, watermark", definition: "On calcule sur l’heure où l’événement s’est produit, pas celle de son arrivée ; le watermark dit jusqu’où les données sont considérées complètes." },
       { term: "Fenêtre", definition: "Tranche de temps sur laquelle on agrège un flux (toutes les 5 minutes, par session d’activité…)." },
+      { term: "Détection de motifs (MATCH_RECOGNIZE)", definition: "Recherche en SQL d’une suite d’événements dans un flux, par exemple « une position, puis une position trop loin pour le temps écoulé »." },
       { term: "AIS, MMSI", definition: "AIS : système radio par lequel les navires diffusent position et identité. MMSI : numéro à 9 chiffres qui identifie un navire." },
     ],
   },
