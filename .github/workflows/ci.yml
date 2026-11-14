@@ -24,6 +24,22 @@ jobs:
       - run: mypy
       - run: pytest
 
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.17.2"
+      - run: terraform fmt -check -recursive
+      # No AWS access in CI: validate the syntax and references, without a backend.
+      - run: terraform init -backend=false -input=false && terraform validate
+      - run: terraform init -backend=false -input=false && terraform validate
+        working-directory: infra/bootstrap
+
   docker:
     runs-on: ubuntu-latest
     steps:

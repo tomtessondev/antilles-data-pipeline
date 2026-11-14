@@ -41,7 +41,7 @@ def attach_lake(con: duckdb.DuckDBPyConnection, settings: Settings) -> None:
     options = {
         "key_id": os.environ["AWS_ACCESS_KEY_ID"],
         "secret": os.environ["AWS_SECRET_ACCESS_KEY"],
-        "region": os.getenv("AWS_REGION", "eu-west-3"),
+        "region": os.getenv("AWS_REGION", "us-east-2"),
     }
     # Temporary credentials, e.g. from the GitHub OIDC role.
     if token := os.getenv("AWS_SESSION_TOKEN"):
