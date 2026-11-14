@@ -20,3 +20,10 @@ logs/
 .user.yml
 .gstack/
 .tmp_dagster_home_*/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+infra/backend.hcl
+infra/terraform.tfvars
