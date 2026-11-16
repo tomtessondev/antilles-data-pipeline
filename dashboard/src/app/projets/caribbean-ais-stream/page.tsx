@@ -83,8 +83,9 @@ const ROADMAP: { step: string; status: Status; detail: string }[] = [
   },
   {
     step: "5. Schémas",
-    status: "à venir",
-    detail: "Avro avec un registre de schémas, pour que producteurs et Flink partagent des enregistrements typés et les fassent évoluer sans casse.",
+    status: "fait",
+    detail:
+      "Schémas Avro dans le dépôt, vérifiés contre les modèles Python, enregistrés dans Confluent Schema Registry en compatibilité totale et transitive. Le producteur écrit en Avro, Flink lit en Avro ; des tests contre un vrai registre montrent quels changements passent et lesquels sont refusés.",
   },
 ];
 
@@ -112,6 +113,18 @@ const TECHNOLOGIES: { name: string; role: string; why: string; alternatives: str
     role: "Client Kafka du producteur et des tests.",
     why: "Basé sur librdkafka, la bibliothèque C de référence : idempotence, compression, rappels de livraison.",
     alternatives: "kafka-python (moins maintenu), aiokafka.",
+  },
+  {
+    name: "Avro",
+    role: "Format binaire des positions et des fiches de navires dans Kafka, décrit par un schéma.",
+    why: "Compact, typé, et pensé pour faire évoluer un schéma sans casser les lecteurs.",
+    alternatives: "Protobuf, JSON Schema, JSON sans schéma (l'état précédent).",
+  },
+  {
+    name: "Confluent Schema Registry",
+    role: "Garde les schémas, leurs versions et la règle de compatibilité ; Flink et Kafka UI y lisent le schéma de chaque message.",
+    why: "La référence du marché, avec un format natif dans Flink.",
+    alternatives: "Karapace, Apicurio Registry (licences Apache).",
   },
   {
     name: "typer",
@@ -491,6 +504,39 @@ export default function CaribbeanAisStreamPage() {
           alt="Tableau de bord Stream health : débit par topic, retard du consommateur par partition, positions lues par seconde, retard du watermark."
           className="h-auto w-full rounded-lg border border-border"
         />
+      </Section>
+
+      <Section id="schemas" title="Schémas et évolution">
+        <Prose>
+          <p>
+            Une position ou une fiche de navire n&apos;est plus du JSON libre : c&apos;est un message
+            Avro, décrit par un schéma versionné dans le dépôt. Chaque message porte le numéro de
+            son schéma, que Flink et Kafka UI vont chercher dans le registre. Un test vérifie que les
+            schémas et les modèles Python décrivent exactement les mêmes champs.
+          </p>
+          <p>
+            Le registre applique une règle de compatibilité <strong>totale et transitive</strong>.
+            Le producteur change en premier, alors que Flink lit avec le schéma figé dans son SQL :
+            une nouvelle version doit rester lisible par les anciens lecteurs. Et Flink relit le
+            topic depuis le début : les anciens messages doivent rester lisibles par une nouvelle
+            version. Concrètement, seul l&apos;ajout ou le retrait d&apos;un champ facultatif avec
+            une valeur par défaut passe.
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>Accepté : ajouter le taux de giration, que l&apos;AIS envoie et qu&apos;on ignore encore.</li>
+            <li>
+              Refusé : retirer la latitude (Flink la lirait vide, et zones de port comme carte
+              deviendraient fausses sans aucune erreur).
+            </li>
+            <li>Refusé : ajouter un champ obligatoire (les anciens messages ne se reliraient plus).</li>
+            <li>Refusé : changer le type du MMSI.</li>
+          </ul>
+          <p>
+            Ces quatre cas sont des tests d&apos;intégration contre un vrai registre. Les messages
+            rejetés restent en JSON : ils sont là pour qu&apos;un humain les lise, sans dépendre du
+            registre.
+          </p>
+        </Prose>
       </Section>
 
       <Section id="technologies" title="Les technologies">
