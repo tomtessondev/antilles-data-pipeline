@@ -524,7 +524,10 @@ export default function CaribbeanAisStreamPage() {
           </p>
           <ul className="list-disc space-y-1 pl-5">
             <li>Accepté : ajouter le taux de giration, que l&apos;AIS envoie et qu&apos;on ignore encore.</li>
-            <li>Refusé : retirer la latitude (le job Flink tomberait).</li>
+            <li>
+              Refusé : retirer la latitude (Flink la lirait vide, et zones de port comme carte
+              deviendraient fausses sans aucune erreur).
+            </li>
             <li>Refusé : ajouter un champ obligatoire (les anciens messages ne se reliraient plus).</li>
             <li>Refusé : changer le type du MMSI.</li>
           </ul>
