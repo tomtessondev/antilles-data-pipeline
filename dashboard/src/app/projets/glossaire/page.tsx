@@ -69,6 +69,20 @@ const GROUPS: { title: string; terms: Term[] }[] = [
     ],
   },
   {
+    title: "Lakehouse et Databricks",
+    terms: [
+      { term: "Lakehouse", definition: "Des fichiers dans un lac de données, mais organisés en vraies tables (mises à jour, historique, schéma), comme dans un entrepôt." },
+      { term: "Architecture médaillon", definition: "Trois couches successives : bronze (données brutes telles que reçues), argent (nettoyées et typées), or (indicateurs prêts à lire)." },
+      { term: "Spark, PySpark", definition: "Moteur de calcul qui répartit le traitement de gros volumes sur plusieurs machines ; PySpark est son interface Python." },
+      { term: "Delta Lake", definition: "Format de tables sur des fichiers Parquet : mises à jour fusionnées (MERGE), historique des versions et lecture d’une version passée." },
+      { term: "MERGE", definition: "Opération qui, en une fois, insère les lignes nouvelles et met à jour les lignes existantes d’une table selon une clé." },
+      { term: "Databricks", definition: "Plateforme de données construite autour de Spark et Delta : calcul à la demande, catalogue, jobs planifiés." },
+      { term: "Unity Catalog", definition: "Le catalogue de Databricks : il range les tables en catalogue, schéma et table, et gère les droits d’accès." },
+      { term: "Asset Bundle", definition: "Description en fichiers d’un job Databricks et de son code, déployée en une commande depuis la ligne de commande." },
+      { term: "Normale climatique", definition: "Moyenne d’une mesure sur 30 ans (ici 1991–2020), qui sert de référence pour dire si un mois est plus chaud ou plus pluvieux que d’habitude." },
+    ],
+  },
+  {
     title: "Cloud, déploiement et web",
     terms: [
       { term: "S3", definition: "Service de stockage d’objets d’AWS : des fichiers dans des « buckets », durables et peu coûteux." },

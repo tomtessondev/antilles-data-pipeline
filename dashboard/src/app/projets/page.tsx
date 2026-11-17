@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Projets",
   description:
-    "Trois projets de data engineering sur les Antilles : un pipeline batch, une chaîne IoT et un flux temps réel. Comment ils fonctionnent et comment les modifier.",
+    "Quatre projets de data engineering sur les Antilles : un pipeline batch, une chaîne IoT, un flux temps réel et un lakehouse. Comment ils fonctionnent et comment les modifier.",
 };
 
 type Project = {
@@ -51,6 +51,17 @@ const PROJECTS: Project[] = [
     stack: ["Python", "WebSocket", "Kafka", "Flink"],
     repo: "https://github.com/tomtessondev/caribbean-ais-stream",
   },
+  {
+    slug: "antilles-climate-lakehouse",
+    kind: "Lakehouse",
+    name: "antilles-climate-lakehouse",
+    pitch:
+      "Toutes les mesures quotidiennes de Météo-France aux Antilles depuis 1950, rangées en couches bronze, argent et or, pour suivre l’évolution du climat de chaque île.",
+    client:
+      "Une plateforme Databricks type : historique fiable, corrections prises en compte, indicateurs qui ne trompent pas.",
+    stack: ["PySpark", "Delta Lake", "Databricks", "Unity Catalog"],
+    repo: "https://github.com/tomtessondev/antilles-climate-lakehouse",
+  },
 ];
 
 export default function ProjectsPage() {
@@ -59,17 +70,17 @@ export default function ProjectsPage() {
       <header className="max-w-3xl space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-ink-muted">Portfolio</p>
         <h1 className="text-3xl font-semibold tracking-tight text-balance">
-          Trois projets de data engineering, sur les mêmes îles
+          Quatre projets de data engineering, sur les mêmes îles
         </h1>
         <p className="text-ink-secondary">
-          Un pipeline batch, une chaîne IoT et un flux temps réel : les trois grandes familles de
+          Un pipeline batch, une chaîne IoT, un flux temps réel et un lakehouse : les grandes familles de
           projets de données, construites sur des données réelles des Antilles. Chaque page
           explique le fonctionnement, les technologies, l’organisation du code et comment le
           modifier.
         </p>
       </header>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         {PROJECTS.map((project) => (
           <section
             key={project.slug}
@@ -106,7 +117,7 @@ export default function ProjectsPage() {
         <Link href="/projets/glossaire" className="underline underline-offset-2">
           glossaire
         </Link>{" "}
-        explique les termes des trois projets.
+        explique les termes des quatre projets.
       </p>
     </article>
   );

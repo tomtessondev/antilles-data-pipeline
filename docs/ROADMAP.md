@@ -33,10 +33,10 @@ Each one is a new repo, sized for one or two weekends.
 
 | Project | What it shows | Tech |
 | --- | --- | --- |
-| **Lakehouse on Databricks** | Medallion architecture (bronze, silver, gold) on public INSEE or Météo-France data | Databricks Community Edition, PySpark, Delta Lake |
+| **Lakehouse on Databricks** (done: [antilles-climate-lakehouse](https://github.com/tomtessondev/antilles-climate-lakehouse)) | Medallion architecture (bronze, silver, gold) on Météo-France daily climate series | Databricks Free Edition, PySpark, Delta Lake, Unity Catalog, Asset Bundles |
 | **Cloud warehouse** | Same dbt models on a real warehouse, cost-aware | BigQuery sandbox or Snowflake trial, dbt Cloud |
-| **Streaming** | Live feed processed in real time, e.g. earthquakes (USGS) or Caribbean shipping (AIS) | Kafka or Redpanda, Python consumer, Docker Compose |
-| **IoT / embedded to cloud** | Bridges FPGA/embedded background with data: sensor (ESP32 or simulated) to MQTT to a time-series DB to Grafana | MQTT, TimescaleDB or InfluxDB, Grafana |
+| **Streaming** (done: [caribbean-ais-stream](https://github.com/tomtessondev/caribbean-ais-stream)) | Live feed processed in real time, e.g. earthquakes (USGS) or Caribbean shipping (AIS) | Kafka or Redpanda, Python consumer, Docker Compose |
+| **IoT / embedded to cloud** (done: [caribbean-sensor-pipeline](https://github.com/tomtessondev/caribbean-sensor-pipeline)) | Bridges FPGA/embedded background with data: sensor (ESP32 or simulated) to MQTT to a time-series DB to Grafana | MQTT, TimescaleDB or InfluxDB, Grafana |
 | **API service** | Serve the marts through a typed REST API with auth and tests | FastAPI, Pydantic, PostgreSQL, Docker |
 | **ML on top of data** | Rain forecast or solar output per town, tracked experiments | scikit-learn, MLflow |
 
