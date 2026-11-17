@@ -104,13 +104,18 @@ export default function LakehouseProjectPage() {
         <P>
           Les deux îles se réchauffent ensemble : l’écart moyen de la température maximale à sa
           normale 1991–2020 passe d’environ −1 °C dans les années 1950 à 1970 à +1,2 °C en 2024,
-          l’année la plus chaude de la série.
+          l’année la plus chaude de la série. Chaque station est comparée à sa propre normale,
+          puis on fait la moyenne des stations mesurées chaque année : le réseau change au fil
+          des décennies, et cette comparaison de chaque station à elle-même en limite l’effet
+          sans l’annuler.
         </P>
         <Image src={hotDays} alt="Nombre de jours à 32 °C ou plus par an, moyenne par station à longue série, Guadeloupe et Martinique, de 1991 à 2025" className={IMAGE} />
         <P>
-          Les jours à 32 °C ou plus sont comptés sur un panel fixe de stations à longue série :
-          10 en Martinique, mais seulement 2 en Guadeloupe, où peu de stations ont une série de
-          température complète depuis 1991. Le graphique l’indique dans sa légende.
+          Les jours à 32 °C ou plus sont comptés sur un panel de stations à longue série :
+          jusqu’à 10 en Martinique, mais 2 au plus en Guadeloupe, où peu de stations ont une
+          série de température complète depuis 1991. Une station ne compte une année que si
+          80 % de ses jours sont mesurés : trois mois de données ne passent pas pour une année
+          calme.
         </P>
       </Section>
 
@@ -163,7 +168,7 @@ export default function LakehouseProjectPage() {
                 <>
                   Pour chaque station et chaque jour, la ligne du fichier le plus récent gagne. Le{" "}
                   <Code>MERGE</Code> compare valeurs et codes qualité : seule la journée corrigée est
-                  réécrite. Une republication identique n’écrit rien.
+                  réécrite. Une republication identique ne réécrit aucune ligne.
                 </>
               ),
             },
@@ -238,7 +243,7 @@ export default function LakehouseProjectPage() {
           rows={[
             ["Sources", "Seuls les bons fichiers sont retenus ; l’empreinte est calculée pendant le téléchargement"],
             ["Bronze", "Un fichier identique n’écrit rien ; un fichier republié remplace ses lignes, l’ancienne version reste lisible"],
-            ["Argent", "Typage et bornes ; changement de période ; une correction ne réécrit qu’une ligne ; une republication identique rien ; territoires"],
+            ["Argent", "Typage et bornes ; changement de période ; une correction ne réécrit qu’une ligne ; une republication identique aucune ; territoires"],
             ["Or", "Seuils, valeurs douteuses exclues, mois incomplets, anomalies, panel, records datés"],
             ["Job", "Les quatre étapes enchaînées comme sur Databricks, sur des fichiers simulés"],
           ]}
