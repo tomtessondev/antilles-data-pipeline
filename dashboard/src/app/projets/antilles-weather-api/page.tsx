@@ -69,7 +69,7 @@ export default function WeatherApiProjectPage() {
             documentation interactive
           </a>
           , cliquez sur <Code>Authorize</Code> et collez la clé de démo (60 requêtes par minute,
-          partagée par tous) : <Code>{DEMO_KEY}</Code>. Le premier appel après un moment de
+          comptées par appelant) : <Code>{DEMO_KEY}</Code>. Le premier appel après un moment de
           calme peut prendre une ou deux secondes : le service et la base se réveillent.
         </P>
         <Table
@@ -113,7 +113,7 @@ export default function WeatherApiProjectPage() {
               title: "Le quota est compté",
               body: (
                 <>
-                  60 appels par minute pour la clé de démo ; au-delà, une réponse 429 indique
+                  60 appels par minute et par appelant pour la clé de démo ; au-delà, une réponse 429 indique
                   quand réessayer. Chaque réponse porte <Code>RateLimit-Remaining</Code>.
                 </>
               ),
@@ -215,7 +215,7 @@ export default function WeatherApiProjectPage() {
             ["Mémoire", "/health et les questions répétées ne touchent pas la base ; le cache ne grossit pas avec des paramètres parasites"],
           ]}
         />
-        <P>37 tests contre PostgreSQL ; à chaque pull request, puis avant chaque déploiement depuis main.</P>
+        <P>44 tests contre PostgreSQL ; à chaque pull request, puis avant chaque déploiement depuis main.</P>
       </Section>
 
       <Section id="lecons" title="Choix de conception et leçons">
