@@ -124,7 +124,7 @@ export default function HurricaneWarehouseProjectPage() {
           head={["Couche", "Contenu", "Règle"]}
           rows={[
             ["raw", "Le fichier IBTrACS et la météo Open-Meteo, chargés par Python", "Les trajectoires sont remplacées entières (la NOAA révise le passé) ; la météo ne reçoit que les jours manquants"],
-            ["staging", "Positions typées, météo quotidienne, les six îles (seed)", "Tables incrémentales, partitionnées par saison ou par mois, regroupées par tempête ou par île"],
+            ["staging", "Positions typées, météo quotidienne, les six îles (seed)", "Partitionnées par saison ou par mois, regroupées par tempête ou par île ; la météo est incrémentale"],
             ["intermediate", "Chaque position à moins de 100 km d’une île, avec sa distance", "Calcul géographique de BigQuery (ST_DWITHIN)"],
             ["marts", "Passages, passages par décennie, saison en cours, météo des passages", "Une ligne par tempête et par île ; catégorie Saffir-Simpson"],
           ]}
@@ -146,18 +146,19 @@ export default function HurricaneWarehouseProjectPage() {
               body: (
                 <>
                   <Code>hurricane-load tracks</Code> lit le fichier ligne à ligne, saute la ligne
-                  des unités, garde la trajectoire principale et prend le vent de l’agence
+                  des unités, garde la trajectoire principale (et les tempêtes de la saison en
+                  cours, encore « provisoires ») et prend le vent de l’agence
                   américaine (celui de l’OMM s’il manque). Les 126 000 positions remplacent la
                   table <Code>raw.tracks</Code>.
                 </>
               ),
             },
             {
-              title: "Staging ne réécrit que les saisons récentes",
+              title: "Staging reconstruit la table entière",
               body: (
                 <>
-                  Chaque jour, <Code>stg_tracks</Code> ne réécrit que les partitions de la saison
-                  en cours et de la précédente : la requête lit 0,1 Mo au lieu de 8.
+                  La NOAA révise aussi les saisons anciennes : <Code>stg_tracks</Code> est reconstruite
+                  chaque jour, partitionnée par saison. Tout l’historique ne pèse que 8 Mo.
                 </>
               ),
             },
@@ -202,13 +203,13 @@ export default function HurricaneWarehouseProjectPage() {
           head={["Exécution", "Requêtes", "Lu", "Facturé"]}
           rows={[
             ["Premier build (tout l’historique)", "69", "82 Mo", "459 Mo"],
-            ["Build quotidien (incrémental)", "29", "24 Mo", "252 Mo"],
+            ["Build quotidien", "26", "33 Mo", "189 Mo"],
             ["Plus gros modèle, en dry run", "1", "10 Mo", "0"],
           ]}
         />
         <P>
           BigQuery facture au moins 10 Mo par requête, d’où l’écart entre lu et facturé. Trente
-          builds quotidiens font environ 7,5 Go par mois : moins de 1 % de la part gratuite.
+          builds quotidiens font moins de 6 Go par mois : moins de 1 % de la part gratuite.
         </P>
       </Section>
 
@@ -268,14 +269,16 @@ export default function HurricaneWarehouseProjectPage() {
             ["Tests de données dbt", "Clés uniques et non nulles, îles et catégories attendues"],
           ]}
         />
-        <P>À chaque pull request : style, types et 14 tests Python, puis tests unitaires dbt et dry run de chaque modèle sur BigQuery.</P>
+        <P>À chaque pull request : style, types et 18 tests Python, puis les tests unitaires dbt sur des tables vides, dans un dataset de CI dont les tables expirent au bout d’un jour, et le dry run de chaque modèle.</P>
       </Section>
 
       <Section id="lecons" title="Choix de conception et leçons">
         <div className="space-y-5">
           <Lesson title="La donnée publique n’était pas à jour">
             La copie de la NOAA dans BigQuery s’arrête en 2023. Vérifier la dernière saison avant
-            de bâtir dessus a évité un entrepôt muet sur 2024 et 2025.
+            de bâtir dessus a évité un entrepôt muet sur 2024 et 2025. Même piège dans le fichier
+            officiel : la saison en cours y est marquée « provisoire », et un filtre sur la seule
+            trajectoire principale l’écartait ; la relecture finale l’a repéré.
           </Lesson>
           <Lesson title="Lu et facturé, ce n’est pas pareil">
             Les modèles lisent quelques mégaoctets, mais BigQuery facture 10 Mo minimum par
