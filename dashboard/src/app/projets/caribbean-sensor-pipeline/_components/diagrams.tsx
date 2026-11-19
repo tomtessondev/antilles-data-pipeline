@@ -52,7 +52,7 @@ export function SensorArchitecture() {
 
         <Arrow id={ARCH} points={[[185, 75], [225, 75], [225, 130], [263, 130]]} />
         <Arrow id={ARCH} points={[[185, 235], [225, 235], [225, 180], [263, 180]]} />
-        <Label x={238} y={159} size={11} muted>
+        <Label x={219} y={159} size={11} anchor="end" muted>
           QoS 1
         </Label>
         <Arrow id={ARCH} points={[[435, 155], [513, 155]]} label="abonné" labelAt={[475, 147]} />

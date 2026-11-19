@@ -74,7 +74,9 @@ export function Table({ head, rows }: { head: string[]; rows: ReactNode[][] }) {
 export function Recipe({ title, children }: { title: string; children: ReactNode }) {
   return (
     <details className="group rounded-lg border border-border bg-surface p-4 open:space-y-3">
-      <summary className="cursor-pointer font-medium marker:text-ink-muted">{title}</summary>
+      <summary className="cursor-pointer marker:text-ink-muted">
+        <h3 className="inline font-medium">{title}</h3>
+      </summary>
       <div className="space-y-2 leading-relaxed text-ink-secondary">{children}</div>
     </details>
   );
@@ -83,7 +85,7 @@ export function Recipe({ title, children }: { title: string; children: ReactNode
 export function Lesson({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="space-y-1 border-l-2 border-series-2 pl-4">
-      <p className="font-medium">{title}</p>
+      <h3 className="font-medium">{title}</h3>
       <div className="max-w-3xl leading-relaxed text-ink-secondary">{children}</div>
     </div>
   );
