@@ -5,8 +5,8 @@ import { ProjectCards } from "@/components/portfolio/project-cards";
 import { SkillsGrid } from "@/components/portfolio/skills-grid";
 
 const FACTS: { value: string; label: string }[] = [
-  { value: "5 projets", label: "cinq familles du data engineering" },
-  { value: "5 dépôts", label: "publics, testés en intégration continue" },
+  { value: "6 projets", label: "six familles du data engineering" },
+  { value: "6 dépôts", label: "publics, testés en intégration continue" },
   { value: "3 clouds", label: "AWS, Google Cloud, Databricks" },
   { value: "1851 → 2026", label: "des ouragans d’hier aux navires d’aujourd’hui" },
 ];
@@ -30,12 +30,12 @@ export default function PortfolioHome() {
           Portfolio · données des Antilles
         </p>
         <h1 className="text-[2rem] leading-[1.1] font-bold tracking-tight text-balance sm:text-5xl lg:text-[3.25rem]">
-          Cinq projets de data engineering, de la donnée brute au résultat, sur les mêmes îles.
+          Six projets de data engineering, de la donnée brute au résultat, sur les mêmes îles.
         </h1>
         <p className="text-lg leading-relaxed text-ink-secondary sm:text-[19px]">
           Ingénieur FPGA et systèmes embarqués, je me suis tourné vers le data engineering. Ce
           portfolio en couvre les grandes familles — batch, IoT, temps réel, lakehouse, entrepôt
-          cloud — chacune construite de bout en bout sur des données réelles de Guadeloupe, de
+          cloud, API — chacune construite de bout en bout sur des données réelles de Guadeloupe, de
           Martinique et des îles voisines : testée, documentée, déployée.
         </p>
         <div className="flex flex-col gap-3 pt-2 sm:flex-row">

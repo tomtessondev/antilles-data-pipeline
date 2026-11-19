@@ -71,7 +71,7 @@ function PrevNext({ slug }: { slug: string }) {
       ) : (
         <Link href="/" className={card}>
           <span className="text-sm text-ink-muted">← Vue d’ensemble</span>
-          <span className="text-[15px] font-semibold">Les cinq projets</span>
+          <span className="text-[15px] font-semibold">Les six projets</span>
         </Link>
       )}
       {next ? (
@@ -82,7 +82,7 @@ function PrevNext({ slug }: { slug: string }) {
       ) : (
         <Link href="/" className={`${card} sm:text-right`}>
           <span className="text-sm text-ink-muted">Retour à la vue d’ensemble →</span>
-          <span className="text-[15px] font-semibold">Les cinq projets</span>
+          <span className="text-[15px] font-semibold">Les six projets</span>
         </Link>
       )}
     </nav>

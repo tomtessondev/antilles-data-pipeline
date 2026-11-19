@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s · Tom Tesson",
   },
   description:
-    "Cinq projets de data engineering sur des données réelles des Antilles : batch, IoT, temps réel, lakehouse et entrepôt cloud. Comment ils fonctionnent et ce qu’ils démontrent.",
+    "Six projets de data engineering sur des données réelles des Antilles : batch, IoT, temps réel, lakehouse, entrepôt cloud et API. Comment ils fonctionnent et ce qu’ils démontrent.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
