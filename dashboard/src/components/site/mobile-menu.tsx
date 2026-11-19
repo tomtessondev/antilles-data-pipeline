@@ -7,7 +7,7 @@ import { type NavGroup, NavLinks } from "./nav-links";
 
 /** The phone menu. It closes when the page changes: the layout, and so this menu, stays
     mounted across navigations. */
-export function MobileMenu({ groups }: { groups: NavGroup[] }) {
+export function MobileMenu({ groups, githubUrl }: { groups: NavGroup[]; githubUrl: string }) {
   const pathname = usePathname();
   const [openOn, setOpenOn] = useState<string | null>(null);
   const open = openOn === pathname;
@@ -33,6 +33,9 @@ export function MobileMenu({ groups }: { groups: NavGroup[] }) {
         className="absolute inset-x-0 top-full max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-b border-border bg-page px-2 pb-4"
       >
         <NavLinks groups={groups} pathname={pathname} />
+        <a href={githubUrl} className="mt-2 block rounded-lg px-3 py-2 text-[15px] text-ink-secondary hover:bg-surface-2">
+          GitHub ↗
+        </a>
       </nav>
     </>
   );

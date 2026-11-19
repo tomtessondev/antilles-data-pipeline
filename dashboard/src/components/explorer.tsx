@@ -113,7 +113,7 @@ export function Explorer({ series, maps, end }: Props) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
-        <Panel title={`${measure.period} par ville`} subtitle={`${range}. Cliquez sur une ville pour son détail.`}>
+        <Panel title={`${measure.period} par ville`} subtitle={`${range} · cliquez sur une ville pour son détail`}>
           <TownMap maps={maps} stats={stats} measure={measure} highlight={highlight} onHighlight={setHighlight} />
         </Panel>
         <Panel title="Classement et tendance" subtitle={`${measure.period}, ${measure.unit}, évolution par rapport aux ${period} jours précédents`}>

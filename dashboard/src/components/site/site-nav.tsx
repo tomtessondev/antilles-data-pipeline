@@ -60,7 +60,7 @@ export function SiteTopBar() {
       <div className="relative flex items-center justify-between px-4 py-3">
         <Brand />
         <Suspense fallback={null}>
-          <MobileMenu groups={GROUPS} />
+          <MobileMenu groups={GROUPS} githubUrl={GITHUB_URL} />
         </Suspense>
       </div>
     </header>
