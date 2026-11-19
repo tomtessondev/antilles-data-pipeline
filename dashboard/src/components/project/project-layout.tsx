@@ -23,6 +23,10 @@ function Brief({ project }: { project: Project }) {
         <span className="font-semibold">Résultat · </span>
         <span className="text-ink-secondary">{project.result}</span>
       </p>
+      <p>
+        <span className="font-semibold">Pour un client · </span>
+        <span className="text-ink-secondary">{project.clientValue}</span>
+      </p>
       <ul aria-label="Technologies" className="flex flex-wrap gap-1.5">
         {project.stack.map((tech) => (
           <li key={tech} className="rounded-md border border-border px-2 py-0.5 text-[13px] text-ink-secondary">
@@ -39,6 +43,11 @@ function Brief({ project }: { project: Project }) {
             Documentation dbt ↗
           </a>
         ) : null}
+        {project.links?.map((link) => (
+          <a key={link.href} href={link.href} className="hover:underline">
+            {link.label} ↗
+          </a>
+        ))}
         {project.demo ? (
           <Link href={project.demo} className="hover:underline">
             Démo en ligne →

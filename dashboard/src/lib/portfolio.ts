@@ -50,6 +50,8 @@ export type Project = {
   repo: string;
   docs?: string;
   demo?: string;
+  /** Other documents worth a link from the "En bref" box. */
+  links?: { label: string; href: string }[];
 };
 
 const GITHUB = "https://github.com/tomtessondev";
@@ -120,6 +122,7 @@ export const PROJECTS: readonly Project[] = [
       security: "TLS et ACL MQTT",
     },
     repo: `${GITHUB}/caribbean-sensor-pipeline`,
+    links: [{ label: "Firmware : câblage et flash", href: `${GITHUB}/caribbean-sensor-pipeline/blob/main/firmware/README.md` }],
   },
   {
     slug: "caribbean-ais-stream",

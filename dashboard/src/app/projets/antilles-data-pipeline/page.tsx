@@ -1,20 +1,9 @@
 import type { Metadata } from "next";
 
 import { AssetGraph, BatchArchitecture, CiDiagram, LakeDiagram } from "@/components/docs/batch-diagrams";
-import {
-  Code,
-  DocHeader,
-  Lessons,
-  Prose,
-  Recipe,
-  RepoTree,
-  Section,
-  Shell,
-  Steps,
-  type Tech,
-  TechTable,
-  Toc,
-} from "@/components/docs/doc-ui";
+import { Lessons, Prose, Recipe, RepoTree, Shell, type Tech, TechTable } from "@/components/docs/doc-ui";
+import { ProjectLayout } from "@/components/project/project-layout";
+import { Code, P, Section, Steps } from "@/components/project/prose";
 
 export const metadata: Metadata = {
   title: "antilles-data-pipeline : documentation",
@@ -22,19 +11,17 @@ export const metadata: Metadata = {
     "Comment fonctionne le pipeline batch météo et qualité de l’air des Antilles : architecture, technologies, organisation du code, recettes de modification.",
 };
 
-const REPO = "https://github.com/tomtessondev/antilles-data-pipeline";
-
-const TOC = [
-  { id: "probleme", label: "Le problème et la solution" },
-  { id: "architecture", label: "Architecture" },
-  { id: "passage", label: "Un run, étape par étape" },
-  { id: "lac", label: "Le lac S3 et la règle « la plus récente gagne »" },
-  { id: "orchestration", label: "Orchestration Dagster" },
-  { id: "technologies", label: "Les technologies" },
-  { id: "depot", label: "Organisation du dépôt" },
-  { id: "modifier", label: "Comment modifier le projet" },
-  { id: "tests", label: "Tests et CI" },
-  { id: "lecons", label: "Choix de conception et leçons" },
+const SECTIONS: [string, string][] = [
+  ["probleme", "Le problème"],
+  ["architecture", "Architecture"],
+  ["passage", "Un run, étape par étape"],
+  ["lac", "Le lac S3"],
+  ["orchestration", "Orchestration Dagster"],
+  ["technologies", "Technologies"],
+  ["depot", "Organisation du dépôt"],
+  ["modifier", "Comment modifier"],
+  ["tests", "Tests et CI"],
+  ["lecons", "Choix et leçons"],
 ];
 
 const TECHS: Tech[] = [
@@ -156,32 +143,7 @@ const TREE: [string, string][] = [
 
 export default function BatchProjectPage() {
   return (
-    <article lang="fr" className="space-y-10">
-      <DocHeader
-        eyebrow="Projet 1 · Batch"
-        title="antilles-data-pipeline"
-        lead={
-          <>
-            <p>
-              La météo et la qualité de l’air de six villes de Guadeloupe et de Martinique,
-              collectées chaque matin, stockées, transformées, testées, puis affichées sur ce site.
-            </p>
-            <p>
-              Pour un client, c’est le modèle d’un pipeline de données complet et automatique :
-              des API externes jusqu’à un tableau de bord, avec l’historique conservé, des tests à
-              chaque étape et une infrastructure décrite en code.
-            </p>
-          </>
-        }
-        links={[
-          { href: REPO, label: "Code sur GitHub" },
-          { href: "/", label: "Le site en ligne" },
-          { href: "https://tomtessondev.github.io/antilles-data-pipeline/", label: "Documentation dbt" },
-        ]}
-      />
-
-      <Toc items={TOC} />
-
+    <ProjectLayout slug="antilles-data-pipeline" sections={SECTIONS} diagram={<BatchArchitecture />}>
       <Section id="probleme" title="Le problème et la solution">
         <Prose>
           <p>
@@ -200,12 +162,24 @@ export default function BatchProjectPage() {
       </Section>
 
       <Section id="architecture" title="Architecture">
-        <BatchArchitecture />
+        <P>
+          Les deux API Open-Meteo (météo horaire, qualité de l’air CAMS) alimentent le job Dagster{" "}
+          <Code>daily_pipeline</Code> : extraction en Python sur 31 jours glissants, lac S3 en
+          Parquet (ajout seul, par date d’extraction), tables brutes DuckDB reconstruites depuis le
+          lac, vues de staging et marts dbt (faits journaliers, dimension villes) testés, puis
+          export de <Code>marts.json</Code>.
+        </P>
+        <P>
+          Ce fichier est publié sur la branche <Code>data</Code> de GitHub ; le site Next.js, sur
+          Vercel, le relit toutes les heures, et la documentation dbt est servie par GitHub Pages.
+          GitHub Actions lance le job chaque matin à 06:00, heure des Antilles (cron 10:00 UTC) ;
+          Terraform décrit le bucket, l’utilisateur IAM et le budget sur AWS (us-east-2).
+        </P>
       </Section>
 
       <Section id="passage" title="Un run, étape par étape">
         <Steps
-          steps={[
+          items={[
             {
               title: "06:00 aux Antilles : GitHub Actions démarre",
               body: (
@@ -434,6 +408,6 @@ cd dashboard && npm ci && npm run dev    # ce site sur localhost:3000`}</Shell>
           ]}
         />
       </Section>
-    </article>
+    </ProjectLayout>
   );
 }

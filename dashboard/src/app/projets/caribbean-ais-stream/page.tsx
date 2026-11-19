@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
 
+import { ProjectLayout } from "@/components/project/project-layout";
+import { Code, Lesson, Recipe, Section, Table } from "@/components/project/prose";
+
 import aisTraffic from "./_images/ais-traffic.png";
 import shipsGif from "./_images/ships.gif";
 import streamHealth from "./_images/stream-health.png";
 
-import { ArchitectureDiagram } from "./_components/architecture";
+import { AisArchitecture } from "./_components/architecture";
 import { CompactionDiagram, PartitionsDiagram } from "./_components/partitions";
 import { TrafficMap } from "./_components/traffic-map";
 
@@ -16,23 +19,24 @@ export const metadata: Metadata = {
     "Comment fonctionne caribbean-ais-stream : les messages AIS des navires autour des Petites Antilles, normalisés et publiés dans Kafka, puis traités par Flink.",
 };
 
-const REPO = "https://github.com/tomtessondev/caribbean-ais-stream";
-
-function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
-  return (
-    <section id={id} className="scroll-mt-6 space-y-4">
-      <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-      {children}
-    </section>
-  );
-}
+const SECTIONS: [string, string][] = [
+  ["probleme", "Le problème"],
+  ["ais", "Qu'est-ce que l'AIS ?"],
+  ["kafka", "Partitions et compactage"],
+  ["parcours", "Un passage dans le pipeline"],
+  ["anomalies", "Détection d'anomalies"],
+  ["carte", "Carte et métriques"],
+  ["schemas", "Schémas et évolution"],
+  ["technologies", "Technologies"],
+  ["depot", "Organisation du dépôt"],
+  ["modifier", "Comment modifier"],
+  ["tests", "Tests et CI"],
+  ["lecons", "Choix et leçons"],
+  ["feuille-de-route", "Feuille de route"],
+];
 
 function Prose({ children }: { children: ReactNode }) {
   return <div className="max-w-3xl space-y-3 leading-relaxed text-ink-secondary [&_strong]:text-ink">{children}</div>;
-}
-
-function Code({ children }: { children: ReactNode }) {
-  return <code className="rounded bg-grid px-1 py-0.5 font-mono text-[0.9em] text-ink">{children}</code>;
 }
 
 function Block({ children }: { children: string }) {
@@ -312,25 +316,7 @@ const LESSONS: { title: string; text: string }[] = [
 
 export default function CaribbeanAisStreamPage() {
   return (
-    <article className="space-y-12">
-      <header className="max-w-3xl space-y-3">
-        <p className="text-sm font-medium tracking-wide text-ink-muted uppercase">Projet 3 · streaming</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-          caribbean-ais-stream : le trafic maritime des Petites Antilles en temps réel
-        </h1>
-        <p className="text-ink-secondary">
-          Les navires de commerce et de passagers diffusent leur position par radio toutes les quelques
-          secondes. Ce projet capte ces messages autour de la Guadeloupe, de la Martinique et des îles
-          voisines, les nettoie et les publie dans Kafka, puis les traite en continu avec Flink :
-          activité des ports toutes les 5 minutes et statistiques horaires par navire.
-        </p>
-        <p className="text-sm">
-          <a href={REPO} className="font-medium underline">
-            Code source sur GitHub
-          </a>
-        </p>
-      </header>
-
+    <ProjectLayout slug="caribbean-ais-stream" sections={SECTIONS} diagram={<AisArchitecture />}>
       <Section id="probleme" title="Le problème et ce que fait le projet">
         <Prose>
           <p>
@@ -370,7 +356,11 @@ export default function CaribbeanAisStreamPage() {
           <p>
             Chaque navire est identifié par son <strong>MMSI</strong>, un numéro à 9 chiffres dont les
             trois premiers désignent le pays (227 à 228 pour la France). Des stations au sol captent ces
-            messages ; le service aisstream.io les redistribue sur Internet.
+            messages ; le service{" "}
+            <a href="https://aisstream.io" className="underline">
+              aisstream.io
+            </a>{" "}
+            les redistribue sur Internet.
           </p>
           <p>
             Particularité du format : une valeur absente n&apos;est pas vide, elle est remplacée par une
@@ -382,8 +372,7 @@ export default function CaribbeanAisStreamPage() {
         </Prose>
       </Section>
 
-      <Section id="architecture" title="Schéma d'architecture">
-        <ArchitectureDiagram />
+      <Section id="kafka" title="Dans Kafka : partitions et compactage">
         <PartitionsDiagram />
         <CompactionDiagram />
       </Section>
@@ -540,28 +529,10 @@ export default function CaribbeanAisStreamPage() {
       </Section>
 
       <Section id="technologies" title="Les technologies">
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <table className="w-full min-w-[720px] text-sm">
-            <thead className="text-left text-ink-muted">
-              <tr className="border-b border-border">
-                <th className="px-3 py-2 font-medium">Technologie</th>
-                <th className="px-3 py-2 font-medium">Rôle ici</th>
-                <th className="px-3 py-2 font-medium">Pourquoi ce choix</th>
-                <th className="px-3 py-2 font-medium">Alternatives</th>
-              </tr>
-            </thead>
-            <tbody className="align-top">
-              {TECHNOLOGIES.map((t) => (
-                <tr key={t.name} className="border-b border-border last:border-0">
-                  <td className="px-3 py-2 font-medium whitespace-nowrap">{t.name}</td>
-                  <td className="px-3 py-2 text-ink-secondary">{t.role}</td>
-                  <td className="px-3 py-2 text-ink-secondary">{t.why}</td>
-                  <td className="px-3 py-2 text-ink-muted">{t.alternatives}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table
+          head={["Technologie", "Rôle ici", "Pourquoi ce choix", "Alternatives"]}
+          rows={TECHNOLOGIES.map((t) => [t.name, t.role, t.why, t.alternatives])}
+        />
       </Section>
 
       <Section id="depot" title="Organisation du dépôt">
@@ -569,12 +540,11 @@ export default function CaribbeanAisStreamPage() {
       </Section>
 
       <Section id="modifier" title="Comment modifier">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-3">
           {RECIPES.map((recipe) => (
-            <div key={recipe.title} className="min-w-0 space-y-2 rounded-lg border border-border bg-surface p-4">
-              <h3 className="font-semibold">{recipe.title}</h3>
-              <p className="text-sm leading-relaxed text-ink-secondary">{recipe.steps}</p>
-            </div>
+            <Recipe key={recipe.title} title={recipe.title}>
+              <p>{recipe.steps}</p>
+            </Recipe>
           ))}
         </div>
         <Prose>
@@ -626,12 +596,11 @@ ais-stream replay data/sample.jsonl --bootstrap localhost:9094`}</Block>
       </Section>
 
       <Section id="lecons" title="Choix de conception et leçons">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-5">
           {LESSONS.map((lesson) => (
-            <div key={lesson.title} className="min-w-0 space-y-2 rounded-lg border border-border bg-surface p-4">
-              <h3 className="font-semibold">{lesson.title}</h3>
-              <p className="text-sm leading-relaxed text-ink-secondary">{lesson.text}</p>
-            </div>
+            <Lesson key={lesson.title} title={lesson.title}>
+              {lesson.text}
+            </Lesson>
           ))}
         </div>
       </Section>
@@ -649,19 +618,6 @@ ais-stream replay data/sample.jsonl --bootstrap localhost:9094`}</Block>
           ))}
         </ol>
       </Section>
-
-      <Section id="liens" title="Liens">
-        <Prose>
-          <ul className="list-disc space-y-1 pl-5">
-            <li>
-              Code source : <a href={REPO} className="underline">{REPO}</a>
-            </li>
-            <li>
-              Flux AIS : <a href="https://aisstream.io" className="underline">aisstream.io</a>
-            </li>
-          </ul>
-        </Prose>
-      </Section>
-    </article>
+    </ProjectLayout>
   );
 }

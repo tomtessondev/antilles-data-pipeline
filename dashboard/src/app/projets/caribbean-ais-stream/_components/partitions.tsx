@@ -1,4 +1,7 @@
-import { ArrowMarker, Figure } from "./diagram";
+import { Arrow, Diagram } from "@/components/docs/diagram";
+
+const PARTITIONS_ID = "ais-partitions";
+const COMPACTION_ID = "ais-compaction";
 
 type Ship = { mmsi: string; name: string; color: string; partition: number };
 
@@ -20,13 +23,15 @@ export function PartitionsDiagram() {
   for (const message of SENT) perPartition[SHIPS[message[0]].partition].push(message);
 
   return (
-    <Figure
-      title="Une clé par navire, un ordre garanti"
-      caption="Le producteur envoie les messages entremêlés. Kafka place chaque clé (le MMSI) toujours dans la même partition : les positions d'un navire y restent dans l'ordre d'envoi. La partition 1 est vide ici, d'autres navires l'occupent."
-      minWidth={640}
-    >
-      <svg viewBox="0 0 900 250" className="h-auto w-full" role="img" aria-label="Répartition des messages de trois navires dans trois partitions Kafka">
-        <ArrowMarker id="ais-part-arrow" />
+    <div className="space-y-2">
+      <h3 className="font-semibold">Une clé par navire, un ordre garanti</h3>
+      <Diagram
+        id={PARTITIONS_ID}
+        title="Répartition des messages de trois navires dans trois partitions Kafka"
+        caption="Le producteur envoie les messages entremêlés. Kafka place chaque clé (le MMSI) toujours dans la même partition : les positions d'un navire y restent dans l'ordre d'envoi. La partition 1 est vide ici, d'autres navires l'occupent."
+        width={900}
+        height={250}
+      >
         <text x={16} y={24} fill="var(--ink-muted)" fontSize={12} fontWeight={600}>ENVOI</text>
         {SENT.map(([ship, n], i) => (
           <g key={`sent-${i}`}>
@@ -36,7 +41,7 @@ export function PartitionsDiagram() {
             </text>
           </g>
         ))}
-        <path d="M330 48 L420 48 L420 70 L438 70" stroke="var(--ink-muted)" strokeWidth={1.5} fill="none" markerEnd="url(#ais-part-arrow)" />
+        <Arrow id={PARTITIONS_ID} points={[[330, 48], [420, 48], [420, 70], [438, 70]]} />
         <text x={344} y={40} fill="var(--ink-secondary)" fontSize={12}>hash(MMSI)</text>
 
         {[0, 1, 2].map((p) => (
@@ -67,8 +72,8 @@ export function PartitionsDiagram() {
         <text x={480} y={221} fill="var(--ink-muted)" fontSize={12}>
           chiffre = numéro du message de ce navire
         </text>
-      </svg>
-    </Figure>
+      </Diagram>
+    </div>
   );
 }
 
@@ -96,19 +101,21 @@ export function CompactionDiagram() {
     </g>
   );
   return (
-    <Figure
-      title="ais.ships, un topic compacté"
-      caption="Chaque navire renvoie sa fiche (nom, type, dimensions, destination) toutes les 6 minutes. Le compactage ne garde que la dernière par clé : le topic se comporte comme une table, qu'un nouveau consommateur relit en entier pour connaître toute la flotte."
-      minWidth={640}
-    >
-      <svg viewBox="0 0 860 190" className="h-auto w-full" role="img" aria-label="Compactage du topic ais.ships : seule la dernière fiche de chaque navire est conservée">
-        <ArrowMarker id="ais-compact-arrow" />
+    <div className="space-y-2">
+      <h3 className="font-semibold">ais.ships, un topic compacté</h3>
+      <Diagram
+        id={COMPACTION_ID}
+        title="Compactage du topic ais.ships : seule la dernière fiche de chaque navire est conservée"
+        caption="Chaque navire renvoie sa fiche (nom, type, dimensions, destination) toutes les 6 minutes. Le compactage ne garde que la dernière par clé : le topic se comporte comme une table, qu'un nouveau consommateur relit en entier pour connaître toute la flotte."
+        width={860}
+        height={190}
+      >
         <text x={16} y={22} fill="var(--ink-muted)" fontSize={12} fontWeight={600}>AVANT COMPACTAGE (ordre d&apos;écriture →)</text>
         {LOG.map((entry, i) => cell(16 + i * 118, 34, entry, kept.indexOf(entry) === -1, `log-${i}`))}
-        <path d="M430 88 L430 116" stroke="var(--ink-muted)" strokeWidth={1.5} markerEnd="url(#ais-compact-arrow)" />
+        <Arrow id={COMPACTION_ID} points={[[430, 88], [430, 116]]} />
         <text x={16} y={128} fill="var(--ink-muted)" fontSize={12} fontWeight={600}>APRÈS</text>
         {kept.map((entry, i) => cell(16 + i * 118, 138, entry, false, `kept-${i}`))}
-      </svg>
-    </Figure>
+      </Diagram>
+    </div>
   );
 }
