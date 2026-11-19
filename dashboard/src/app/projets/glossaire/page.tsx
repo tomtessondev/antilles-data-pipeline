@@ -113,7 +113,7 @@ export default function GlossaryPage() {
   return (
     <article lang="fr" className="space-y-8">
       <header className="max-w-3xl space-y-2">
-        <Link href="/projets" className="text-sm text-ink-secondary hover:text-ink">
+        <Link href="/#projets" className="text-sm text-ink-secondary hover:text-ink">
           ← Tous les projets
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">Glossaire</h1>
