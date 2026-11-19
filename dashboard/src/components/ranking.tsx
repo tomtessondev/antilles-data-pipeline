@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { formatValue, type Measure, type TownStat } from "@/lib/measures";
+import { townHref } from "@/lib/routes";
 
 function Sparkline({ values, color }: { values: (number | null)[]; color: string }) {
   const points = values
@@ -33,7 +34,7 @@ function Delta({ measure, delta }: { measure: Measure; delta: number | null }) {
   return (
     <span className="text-ink-secondary">
       <span aria-hidden>{rounded > 0 ? "▲" : "▼"}</span>{" "}
-      <span className="sr-only">{rounded > 0 ? "up" : "down"} </span>
+      <span className="sr-only">{rounded > 0 ? "hausse" : "baisse"} </span>
       {Math.abs(rounded).toFixed(measure.digits)}
     </span>
   );
@@ -53,15 +54,15 @@ export function Ranking({ stats, colors, measure, period, highlight, onHighlight
   return (
     <table className="w-full text-sm">
       <caption className="sr-only">
-        {measure.period} over the last {period} days, per town, with the change versus the {period} days before
+        {measure.period} sur les {period} derniers jours, par ville, avec l’évolution par rapport aux {period} jours précédents
       </caption>
       <thead className="text-left text-xs text-ink-muted">
         <tr className="border-b border-border">
-          <th className="py-2 pr-2 font-medium">Town</th>
+          <th className="py-2 pr-2 font-medium">Ville</th>
           <th className="py-2 pr-2 text-right font-medium">{measure.unit}</th>
-          <th className="py-2 pr-2 text-right font-medium">vs prev. {period} d</th>
+          <th className="py-2 pr-2 text-right font-medium">vs {period} j préc.</th>
           <th className="py-2 font-medium">
-            <span className="sr-only">Daily trend</span>
+            <span className="sr-only">Tendance journalière</span>
           </th>
         </tr>
       </thead>
@@ -78,7 +79,7 @@ export function Ranking({ stats, colors, measure, period, highlight, onHighlight
               className={`border-b border-border last:border-0 ${highlight === code ? "bg-grid/60" : ""}`}
             >
               <td className="py-2 pr-2">
-                <Link href={`/towns/${code}`} className="flex items-center gap-2 hover:underline">
+                <Link href={townHref(code)} className="flex items-center gap-2 hover:underline">
                   <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} />
                   <span>
                     {location.town}

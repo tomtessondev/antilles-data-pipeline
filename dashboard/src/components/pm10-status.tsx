@@ -5,13 +5,13 @@ export function Pm10Status({ airQuality }: { airQuality: DailyAirQuality }) {
   if (airQuality.exceeds_pm10_daily_limit) {
     return (
       <span className="inline-flex items-center gap-1 text-sm font-medium text-critical">
-        <span aria-hidden>▲</span> Above EU limit
+        <span aria-hidden>▲</span> Au-dessus du seuil UE
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 text-sm text-good">
-      <span aria-hidden>●</span> Within EU limit
+      <span aria-hidden>●</span> Sous le seuil UE
     </span>
   );
 }

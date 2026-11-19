@@ -99,7 +99,7 @@ export function ComparisonChart({ series, colors, measure, end, period, highligh
               ifOverflow="extendDomain"
               stroke="var(--critical)"
               label={{
-                value: `EU daily limit (${EU_PM10_DAILY_LIMIT_UGM3})`,
+                value: `Seuil journalier UE (${EU_PM10_DAILY_LIMIT_UGM3})`,
                 position: "insideTopRight",
                 fill: "var(--ink-secondary)",
                 fontSize: 12,

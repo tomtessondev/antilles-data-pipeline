@@ -126,20 +126,20 @@ function LinesChart({ data, series, unit, limit }: {
 }
 
 const TEMPERATURE: Series[] = [
-  { key: "tempMin", label: "Daily low", color: "var(--series-1)" },
-  { key: "tempMax", label: "Daily high", color: "var(--series-2)" },
+  { key: "tempMin", label: "Minimum du jour", color: "var(--series-1)" },
+  { key: "tempMax", label: "Maximum du jour", color: "var(--series-2)" },
 ];
 
 const AIR: Series[] = [
-  { key: "pm10", label: "PM10 daily mean", color: "var(--series-1)" },
-  { key: "dust", label: "Dust hourly peak", color: "var(--series-2)" },
+  { key: "pm10", label: "PM10, moyenne journalière", color: "var(--series-1)" },
+  { key: "dust", label: "Poussières, pic horaire", color: "var(--series-2)" },
 ];
 
-const RAIN: Series[] = [{ key: "rain", label: "Rain", color: "var(--series-1)" }];
+const RAIN: Series[] = [{ key: "rain", label: "Pluie", color: "var(--series-1)" }];
 
 export function TemperatureChart({ data }: { data: ChartPoint[] }) {
   return (
-    <ChartFrame title="Temperature" subtitle="Lowest and highest hourly value, °C" series={TEMPERATURE}>
+    <ChartFrame title="Température" subtitle="Valeurs horaires minimale et maximale, °C" series={TEMPERATURE}>
       <LinesChart data={data} series={TEMPERATURE} unit="°C" />
     </ChartFrame>
   );
@@ -147,7 +147,7 @@ export function TemperatureChart({ data }: { data: ChartPoint[] }) {
 
 export function RainChart({ data }: { data: ChartPoint[] }) {
   return (
-    <ChartFrame title="Rainfall" subtitle="Daily total, mm">
+    <ChartFrame title="Précipitations" subtitle="Cumul journalier, mm">
       <BarChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: -16 }}>
         <CartesianGrid vertical={false} stroke="var(--grid)" />
         <XAxis dataKey="day" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: "var(--baseline)" }} />
@@ -155,7 +155,7 @@ export function RainChart({ data }: { data: ChartPoint[] }) {
         <Tooltip content={makeTooltip(RAIN, "mm")} cursor={{ fill: "var(--grid)", opacity: 0.5 }} />
         <Bar
           dataKey="rain"
-          name="Rain"
+          name="Pluie"
           fill="var(--series-1)"
           radius={[4, 4, 0, 0]}
           maxBarSize={24}
@@ -169,11 +169,11 @@ export function RainChart({ data }: { data: ChartPoint[] }) {
 export function AirQualityChart({ data, limit }: { data: ChartPoint[]; limit: number }) {
   return (
     <ChartFrame
-      title="Particulate matter and Saharan dust"
-      subtitle="µg/m³. The EU limit applies to the PM10 daily mean."
+      title="Particules fines et poussières du Sahara"
+      subtitle="µg/m³. Le seuil UE s’applique à la moyenne journalière des PM10."
       series={AIR}
     >
-      <LinesChart data={data} series={AIR} unit="µg/m³" limit={{ value: limit, label: `EU PM10 limit (${limit})` }} />
+      <LinesChart data={data} series={AIR} unit="µg/m³" limit={{ value: limit, label: `Seuil UE PM10 (${limit})` }} />
     </ChartFrame>
   );
 }

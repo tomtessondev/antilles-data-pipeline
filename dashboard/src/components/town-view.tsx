@@ -33,8 +33,8 @@ export function TownView({ series, end }: { series: TownSeries; end: string }) {
           {formatDay(addDays(end, -(period - 1)))} – {formatDay(end)}
         </span>
         <Segmented
-          label="Period"
-          options={PERIODS.map((p) => ({ value: p, label: `${p} days` }))}
+          label="Période"
+          options={PERIODS.map((p) => ({ value: p, label: `${p} jours` }))}
           value={period}
           onChange={setPeriod}
         />
@@ -53,10 +53,10 @@ export function TownView({ series, end }: { series: TownSeries; end: string }) {
               </p>
               <p className="mt-1 text-sm text-ink-secondary">
                 {delta === null
-                  ? "No previous period to compare"
+                  ? "Pas de période précédente à comparer"
                   : delta === 0
-                    ? `Same as the ${period} days before`
-                    : `${delta > 0 ? "▲" : "▼"} ${Math.abs(delta).toFixed(measure.digits)} vs the ${period} days before`}
+                    ? `Identique aux ${period} jours précédents`
+                    : `${delta > 0 ? "▲" : "▼"} ${Math.abs(delta).toFixed(measure.digits)} vs les ${period} jours précédents`}
               </p>
             </div>
           );
@@ -73,26 +73,26 @@ export function TownView({ series, end }: { series: TownSeries; end: string }) {
 
       <section className="space-y-4 rounded-lg border border-border bg-surface p-4 sm:p-5">
         <header className="space-y-1">
-          <h2 className="font-semibold">Saharan dust episodes</h2>
-          <p className="text-sm text-ink-muted">Daily dust peak; ▲ marks days above the EU PM10 limit.</p>
+          <h2 className="font-semibold">Épisodes de poussières du Sahara</h2>
+          <p className="text-sm text-ink-muted">Pic journalier de poussières ; ▲ marque les jours au-dessus du seuil UE pour les PM10.</p>
         </header>
         <DustCalendar series={[series]} end={end} period={period} />
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Daily values</h2>
+        <h2 className="text-lg font-semibold">Valeurs journalières</h2>
         <div className="overflow-x-auto rounded-lg border border-border bg-surface">
           <table className="w-full text-sm tabular-nums">
             <thead className="text-left text-ink-muted">
               <tr className="border-b border-border">
-                <th className="px-3 py-2 font-medium">Day</th>
-                <th className="px-3 py-2 text-right font-medium">Low °C</th>
-                <th className="px-3 py-2 text-right font-medium">High °C</th>
-                <th className="px-3 py-2 text-right font-medium">Rain mm</th>
-                <th className="px-3 py-2 text-right font-medium">Wind max km/h</th>
+                <th className="px-3 py-2 font-medium">Jour</th>
+                <th className="px-3 py-2 text-right font-medium">Min. °C</th>
+                <th className="px-3 py-2 text-right font-medium">Max. °C</th>
+                <th className="px-3 py-2 text-right font-medium">Pluie mm</th>
+                <th className="px-3 py-2 text-right font-medium">Vent max. km/h</th>
                 <th className="px-3 py-2 text-right font-medium">PM10 µg/m³</th>
-                <th className="px-3 py-2 text-right font-medium">Dust peak µg/m³</th>
-                <th className="px-3 py-2 font-medium">EU PM10 limit</th>
+                <th className="px-3 py-2 text-right font-medium">Pic poussières µg/m³</th>
+                <th className="px-3 py-2 font-medium">Seuil UE PM10</th>
               </tr>
             </thead>
             <tbody>

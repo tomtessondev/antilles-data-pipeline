@@ -69,7 +69,7 @@ export function Explorer({ series, maps, end }: Props) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
         <Segmented
-          label="Measure"
+          label="Mesure"
           options={MEASURES.map((m) => ({ value: m.key, label: m.label }))}
           value={measureKey}
           onChange={setMeasureKey}
@@ -77,8 +77,8 @@ export function Explorer({ series, maps, end }: Props) {
         <div className="flex items-center gap-3">
           <span className="text-sm text-ink-muted">{range}</span>
           <Segmented
-            label="Period"
-            options={PERIODS.map((p) => ({ value: p, label: `${p} days` }))}
+            label="Période"
+            options={PERIODS.map((p) => ({ value: p, label: `${p} jours` }))}
             value={period}
             onChange={setPeriod}
           />
@@ -87,25 +87,25 @@ export function Explorer({ series, maps, end }: Props) {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi
-          label="Days above the EU PM10 limit"
+          label="Jours au-dessus du seuil UE PM10"
           value={String(highlights.exceedanceDays)}
           unit={`/ ${highlights.days}`}
-          detail="in at least one town"
+          detail="dans au moins une ville"
         />
         <Kpi
-          label="Highest dust peak"
+          label="Pic de poussières le plus élevé"
           value={highlights.dustPeak ? highlights.dustPeak.value.toFixed(0) : "–"}
           unit="µg/m³"
           detail={highlights.dustPeak && where(highlights.dustPeak)}
         />
         <Kpi
-          label="Wettest town"
+          label="Ville la plus pluvieuse"
           value={highlights.wettestTown ? highlights.wettestTown.value.toFixed(0) : "–"}
           unit="mm"
           detail={highlights.wettestTown?.town}
         />
         <Kpi
-          label="Hottest afternoon"
+          label="Plus forte chaleur"
           value={highlights.hottest ? highlights.hottest.value.toFixed(1) : "–"}
           unit="°C"
           detail={highlights.hottest && where(highlights.hottest)}
@@ -113,10 +113,10 @@ export function Explorer({ series, maps, end }: Props) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
-        <Panel title={`${measure.period} by town`} subtitle={`${range}. Click a town for its details.`}>
+        <Panel title={`${measure.period} par ville`} subtitle={`${range}. Cliquez sur une ville pour son détail.`}>
           <TownMap maps={maps} stats={stats} measure={measure} highlight={highlight} onHighlight={setHighlight} />
         </Panel>
-        <Panel title="Ranking and trend" subtitle={`${measure.period}, ${measure.unit}, change versus the ${period} days before`}>
+        <Panel title="Classement et tendance" subtitle={`${measure.period}, ${measure.unit}, évolution par rapport aux ${period} jours précédents`}>
           <Ranking
             stats={stats}
             colors={colors}
@@ -128,7 +128,7 @@ export function Explorer({ series, maps, end }: Props) {
         </Panel>
       </div>
 
-      <Panel title={`${measure.daily}, all towns`} subtitle={`${measure.unit}, ${range}. Hover the legend to isolate a town.`}>
+      <Panel title={`${measure.daily}, toutes les villes`} subtitle={`${measure.unit}, ${range}. Survolez la légende pour isoler une ville.`}>
         <ComparisonChart
           series={series}
           colors={colors}
@@ -141,8 +141,8 @@ export function Explorer({ series, maps, end }: Props) {
       </Panel>
 
       <Panel
-        title="Saharan dust episodes"
-        subtitle="Daily dust peak per town. Dust from the Sahara crosses the Atlantic mostly between April and October."
+        title="Épisodes de poussières du Sahara"
+        subtitle="Pic journalier de poussières par ville. Les poussières du Sahara traversent l’Atlantique surtout d’avril à octobre."
       >
         <DustCalendar series={series} end={end} period={period} highlight={highlight} onHighlight={setHighlight} />
       </Panel>

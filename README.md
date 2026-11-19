@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/tomtessondev/antilles-data-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/tomtessondev/antilles-data-pipeline/actions/workflows/ci.yml)
 [![dbt docs](https://img.shields.io/badge/dbt-docs-FF694B?logo=dbt&logoColor=white)](https://tomtessondev.github.io/antilles-data-pipeline/)
-[![Dashboard](https://img.shields.io/badge/dashboard-live-000000?logo=vercel&logoColor=white)](https://antilles-data-pipeline.vercel.app/)
+[![Dashboard](https://img.shields.io/badge/dashboard-live-000000?logo=vercel&logoColor=white)](https://antilles-data-pipeline.vercel.app/demo)
 
 A production-style data pipeline built on open data from **Guadeloupe and Martinique**.
 It extracts hourly weather and air quality (including Saharan dust) from the
@@ -10,8 +10,8 @@ It extracts hourly weather and air quality (including Saharan dust) from the
 **S3** lake, rebuilds **DuckDB** tables from it, transforms them with **dbt**, and runs
 daily as a **Dagster** job. The AWS side is provisioned with **Terraform**.
 
-**Live dashboard: [antilles-data-pipeline.vercel.app](https://antilles-data-pipeline.vercel.app/)**,
-updated every morning.
+**Live dashboard: [antilles-data-pipeline.vercel.app/demo](https://antilles-data-pipeline.vercel.app/demo)**,
+updated every morning; the site's home page is the portfolio of all five projects.
 
 The goal is to show, end to end, how I structure a data project meant to run in production:
 typed and tested Python, idempotent loads, retries, data-quality tests, CI/CD, containers
