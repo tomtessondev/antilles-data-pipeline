@@ -95,13 +95,13 @@ export function windowDays(days: TownDay[], end: string, length: number, offset 
   return days.filter((d) => d.date >= first && d.date <= last);
 }
 
-const dayFormat = new Intl.DateTimeFormat("en-GB", {
+const dayFormat = new Intl.DateTimeFormat("fr-FR", {
   day: "numeric",
   month: "short",
   timeZone: "UTC",
 });
 
-/** "2026-11-05" -> "5 Nov". Dates are local calendar days, so format them as UTC. */
+/** "2026-11-05" -> "5 nov.". Dates are local calendar days, so format them as UTC. */
 export function formatDay(isoDate: string): string {
   return dayFormat.format(new Date(`${isoDate}T00:00:00Z`));
 }

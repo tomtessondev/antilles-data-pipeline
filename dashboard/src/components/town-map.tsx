@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { normalise, rampColor } from "@/lib/colors";
 import type { TerritoryMap } from "@/lib/geo";
 import { formatValue, type Measure, type TownStat } from "@/lib/measures";
+import { townHref } from "@/lib/routes";
 
 type Props = {
   maps: TerritoryMap[];
@@ -35,7 +36,7 @@ export function TownMap({ maps, stats, measure, highlight, onHighlight }: Props)
               viewBox={`0 0 ${map.width} ${map.height}`}
               className="h-auto w-full"
               role="img"
-              aria-label={`Map of ${map.territory}: ${measure.period.toLowerCase()} per town`}
+              aria-label={`Carte de ${map.territory} : ${measure.period.toLowerCase()} par ville`}
             >
               {map.communes.map((commune) => {
                 const stat = commune.locationCode ? byCode.get(commune.locationCode) : undefined;
@@ -56,7 +57,7 @@ export function TownMap({ maps, stats, measure, highlight, onHighlight }: Props)
                     opacity={dimmed ? 0.45 : 1}
                     onMouseEnter={() => onHighlight(code)}
                     onMouseLeave={() => onHighlight(null)}
-                    onClick={() => router.push(`/towns/${code}`)}
+                    onClick={() => router.push(townHref(code))}
                     className="cursor-pointer transition-opacity"
                   >
                     <title>{`${stat.series.location.town}: ${formatValue(measure, stat.value)} ${measure.unit}`}</title>
@@ -78,7 +79,7 @@ export function TownMap({ maps, stats, measure, highlight, onHighlight }: Props)
                     className="cursor-pointer"
                     onMouseEnter={() => onHighlight(code)}
                     onMouseLeave={() => onHighlight(null)}
-                    onClick={() => router.push(`/towns/${code}`)}
+                    onClick={() => router.push(townHref(code))}
                     opacity={highlight !== null && highlight !== code ? 0.45 : 1}
                   >
                     {/* The communes of Pointe-à-Pitre and Basse-Terre are tiny: the dot carries the value too. */}
@@ -122,7 +123,7 @@ export function TownMap({ maps, stats, measure, highlight, onHighlight }: Props)
           <span className="tabular-nums">
             {formatValue(measure, max)} {measure.unit}
           </span>
-          <span>· {measure.period.toLowerCase()}, relative scale across the six towns</span>
+          <span>· {measure.period.toLowerCase()}, échelle relative entre les six villes</span>
         </div>
       )}
     </div>

@@ -30,6 +30,15 @@
   --seq-orange-high: #8f3110;
   --land: #ecebe6;
   --on-seq-high: #ffffff;
+
+  /* Portfolio: a raised surface, link colour, one colour per project family. */
+  --surface-2: #efeeea;
+  --accent: #1f5fae;
+  --family-batch: #2a78d6;
+  --family-iot: #1baf7a;
+  --family-stream: #eb6834;
+  --family-lakehouse: #eda100;
+  --family-warehouse: #e87ba4;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -59,6 +68,13 @@
     --seq-orange-high: #f8bf9f;
     --land: #2a2a28;
     --on-seq-high: #0b0b0b;
+    --surface-2: #262624;
+    --accent: #6aa6ee;
+    --family-batch: #3987e5;
+    --family-iot: #199e70;
+    --family-stream: #d95926;
+    --family-lakehouse: #c98500;
+    --family-warehouse: #d4729a;
   }
 }
 
@@ -89,10 +105,25 @@
   --color-land: var(--land);
   --color-on-seq-high: var(--on-seq-high);
   --color-baseline: var(--baseline);
-  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-surface-2: var(--surface-2);
+  --color-accent: var(--accent);
+  --color-family-batch: var(--family-batch);
+  --color-family-iot: var(--family-iot);
+  --color-family-stream: var(--family-stream);
+  --color-family-lakehouse: var(--family-lakehouse);
+  --color-family-warehouse: var(--family-warehouse);
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
 body {
   background: var(--page);
   color: var(--ink);
+}
+
+/* The phone top bar is sticky: anchors land below it. */
+@media (max-width: 1023px) {
+  html {
+    scroll-padding-top: 5rem;
+  }
 }

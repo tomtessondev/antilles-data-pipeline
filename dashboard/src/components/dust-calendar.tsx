@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { dateRange, formatDay, type TownDay, type TownSeries } from "@/lib/analysis";
 import { normalise, rampColor } from "@/lib/colors";
+import { townHref } from "@/lib/routes";
 
 type Props = {
   series: TownSeries[];
@@ -33,11 +34,11 @@ export function DustCalendar({ series, end, period, highlight = null, onHighligh
   const readout = hovered
     ? `${formatDay(hovered.date)} · ${hovered.town} · ` +
       (hovered.day?.airQuality
-        ? `dust peak ${hovered.day.airQuality.dust_max_ugm3?.toFixed(0) ?? "–"} µg/m³, PM10 mean ${
+        ? `pic de poussières ${hovered.day.airQuality.dust_max_ugm3?.toFixed(0) ?? "–"} µg/m³, moyenne PM10 ${
             hovered.day.airQuality.pm10_avg_ugm3?.toFixed(0) ?? "–"
-          } µg/m³${hovered.day.airQuality.exceeds_pm10_daily_limit ? " (above EU limit)" : ""}`
-        : "no data")
-    : "Hover a day for its values.";
+          } µg/m³${hovered.day.airQuality.exceeds_pm10_daily_limit ? " (au-dessus du seuil UE)" : ""}`
+        : "pas de données")
+    : "Survolez un jour pour voir ses valeurs.";
 
   return (
     <div className="space-y-3">
@@ -53,7 +54,7 @@ export function DustCalendar({ series, end, period, highlight = null, onHighligh
               {i % Math.ceil(dates.length / 6) === 0 ? formatDay(date) : ""}
             </span>
           ))}
-          <span className="pl-2 text-[10px] text-ink-muted">Days &gt; limit</span>
+          <span className="pl-2 text-[10px] text-ink-muted">Jours &gt; seuil</span>
 
           {series.map((s) => {
             const code = s.location.location_code;
@@ -67,7 +68,7 @@ export function DustCalendar({ series, end, period, highlight = null, onHighligh
                 onMouseEnter={() => onHighlight?.(code)}
                 onMouseLeave={() => onHighlight?.(null)}
               >
-                <Link href={`/towns/${code}`} className="truncate pr-2 text-sm hover:underline">
+                <Link href={townHref(code)} className="truncate pr-2 text-sm hover:underline">
                   {s.location.town}
                 </Link>
                 {dates.map((date) => {
@@ -84,9 +85,9 @@ export function DustCalendar({ series, end, period, highlight = null, onHighligh
                         background: dust === null ? "var(--land)" : rampColor("orange", t),
                         color: t > 0.55 ? "var(--on-seq-high)" : "var(--ink)",
                       }}
-                      aria-label={`${s.location.town}, ${formatDay(date)}: dust peak ${
-                        dust === null ? "no data" : `${dust.toFixed(0)} µg/m³`
-                      }${exceeds ? ", PM10 above EU limit" : ""}`}
+                      aria-label={`${s.location.town}, ${formatDay(date)}: pic de poussières ${
+                        dust === null ? "pas de données" : `${dust.toFixed(0)} µg/m³`
+                      }${exceeds ? ", PM10 au-dessus du seuil UE" : ""}`}
                     >
                       {exceeds ? "▲" : ""}
                     </span>
@@ -106,9 +107,9 @@ export function DustCalendar({ series, end, period, highlight = null, onHighligh
             className="h-2 w-32 rounded-full"
             style={{ background: `linear-gradient(to right, ${rampColor("orange", 0)}, ${rampColor("orange", 1)})` }}
           />
-          {max}+ µg/m³ dust hourly peak
+          {max}+ µg/m³, pic horaire de poussières
         </span>
-        <span>▲ PM10 daily mean above the EU limit (50 µg/m³)</span>
+        <span>▲ moyenne journalière des PM10 au-dessus du seuil UE (50 µg/m³)</span>
       </div>
       <p className="text-sm text-ink-secondary" aria-live="polite">
         {readout}

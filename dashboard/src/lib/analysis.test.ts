@@ -79,7 +79,7 @@ describe("locationsByTerritory", () => {
 
 describe("formatDay", () => {
   it("formats the calendar day without shifting it to the local timezone", () => {
-    expect(formatDay("2026-11-01")).toBe("1 Nov");
+    expect(formatDay("2026-11-01")).toBe("1 nov.");
   });
 });
 

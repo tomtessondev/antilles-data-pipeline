@@ -18,7 +18,7 @@ export function DocHeader({
 }) {
   return (
     <header className="space-y-3">
-      <Link href="/projets" className="text-sm text-ink-secondary hover:text-ink">
+      <Link href="/#projets" className="text-sm text-ink-secondary hover:text-ink">
         ← Tous les projets
       </Link>
       <p className="text-xs font-semibold uppercase tracking-wider text-ink-muted">{eyebrow}</p>

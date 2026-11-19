@@ -57,7 +57,7 @@ export default function SensorProjectPage() {
   return (
     <article className="space-y-12">
       <header className="max-w-3xl space-y-3">
-        <Link href="/projets" className="text-sm text-ink-secondary hover:text-ink">
+        <Link href="/#projets" className="text-sm text-ink-secondary hover:text-ink">
           ← Tous les projets
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
@@ -380,7 +380,7 @@ export default function SensorProjectPage() {
         <a href={`${REPO}/blob/main/firmware/README.md`} className="underline hover:text-ink">
           Firmware : câblage et flash
         </a>
-        <Link href="/projets" className="underline hover:text-ink">
+        <Link href="/#projets" className="underline hover:text-ink">
           Les autres projets
         </Link>
       </footer>
