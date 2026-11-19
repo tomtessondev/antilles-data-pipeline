@@ -1,0 +1,39 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+
+import { type NavGroup, NavLinks } from "./nav-links";
+
+/** The phone menu. It closes when the page changes: the layout, and so this menu, stays
+    mounted across navigations. */
+export function MobileMenu({ groups }: { groups: NavGroup[] }) {
+  const pathname = usePathname();
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls="mobile-menu"
+        onClick={() => setOpenOn(open ? null : pathname)}
+        className="flex h-11 items-center gap-2 rounded-lg border border-border px-3.5 text-[15px] font-semibold focus-visible:outline-2 focus-visible:outline-accent"
+      >
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d={open ? "M6 6l12 12M18 6L6 18" : "M4 7h16M4 12h16M4 17h16"} />
+        </svg>
+        {open ? "Fermer" : "Menu"}
+      </button>
+      <nav
+        id="mobile-menu"
+        aria-label="Navigation principale"
+        hidden={!open}
+        className="absolute inset-x-0 top-full max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-b border-border bg-page px-2 pb-4"
+      >
+        <NavLinks groups={groups} pathname={pathname} />
+      </nav>
+    </>
+  );
+}

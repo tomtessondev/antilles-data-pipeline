@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
 
+import { REDIRECTS } from "./src/lib/redirects";
+
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
+  async redirects() {
+    return REDIRECTS;
+  },
   partialPrefetching: true,
   turbopack: {
     rules: {

@@ -1,49 +1,42 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Inter, JetBrains_Mono } from "next/font/google";
+
+import { GITHUB_URL, SiteSidebar, SiteTopBar } from "@/components/site/site-nav";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Antilles weather & air quality",
-    template: "%s · Antilles weather & air quality",
+    default: "Tom Tesson — data engineer, portfolio Antilles",
+    template: "%s · Tom Tesson",
   },
   description:
-    "Daily weather, rainfall and air quality (PM10, Saharan dust) for six towns in Guadeloupe and Martinique.",
+    "Cinq projets de data engineering sur des données réelles des Antilles : batch, IoT, temps réel, lakehouse et entrepôt cloud. Comment ils fonctionnent et ce qu’ils démontrent.",
 };
-
-const REPO_URL = "https://github.com/tomtessondev/antilles-data-pipeline";
-const DOCS_URL = "https://tomtessondev.github.io/antilles-data-pipeline/";
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="flex min-h-full flex-col font-sans">
-        <header className="border-b border-border">
-          <div className="mx-auto flex max-w-6xl items-baseline justify-between gap-4 px-4 py-4">
-            <Link href="/" className="font-semibold tracking-tight">
-              Antilles weather &amp; air quality
-            </Link>
-            <nav className="flex gap-4 text-sm text-ink-secondary">
-              <Link href="/projets" className="hover:text-ink">
-                Projets
-              </Link>
-              <a href={DOCS_URL} className="hover:text-ink">
-                Data model
-              </a>
-              <a href={REPO_URL} className="hover:text-ink">
-                Source
-              </a>
-            </nav>
-          </div>
-        </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
-        <footer className="border-t border-border">
-          <p className="mx-auto max-w-6xl px-4 py-4 text-sm text-ink-muted">
-            Data: <a href="https://open-meteo.com/" className="underline">Open-Meteo</a>{" "}
-            forecast and air-quality APIs (CAMS model), CC BY 4.0. Commune outlines: IGN Admin
-            Express, Licence Ouverte. Extracted daily into DuckDB and modelled with dbt.
-          </p>
-        </footer>
+    <html lang="fr" className={`h-full antialiased ${inter.variable} ${mono.variable}`}>
+      <body className="min-h-full font-sans lg:flex">
+        <SiteSidebar />
+        <SiteTopBar />
+        <div className="flex min-h-full min-w-0 flex-1 flex-col">
+          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-8 lg:px-12 lg:py-14">{children}</main>
+          <footer className="border-t border-border">
+            <div className="mx-auto flex max-w-5xl flex-wrap justify-between gap-4 px-4 py-6 text-sm text-ink-muted sm:px-8 lg:px-12">
+              <span>Tom Tesson · data engineer · Antilles</span>
+              <span>
+                Données : Open-Meteo, Météo-France, NOAA, AIS (licences ouvertes). Code source sur{" "}
+                <a href={GITHUB_URL} className="underline hover:text-ink">
+                  GitHub
+                </a>
+                .
+              </span>
+            </div>
+          </footer>
+        </div>
       </body>
     </html>
   );
