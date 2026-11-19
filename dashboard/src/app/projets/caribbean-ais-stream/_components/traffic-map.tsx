@@ -4,8 +4,6 @@ import type { MultiPoint } from "geojson";
 import communesData from "../../../../../data/communes.json";
 import { type Communes, rewind } from "@/lib/geo";
 
-import { Figure } from "./diagram";
-
 // Same coordinates as src/ais_stream/synthetic.py in caribbean-ais-stream.
 const PORTS: Record<string, [number, number]> = {
   "Pointe-à-Pitre": [-61.533, 16.229],
@@ -43,82 +41,86 @@ export function TrafficMap() {
   const xy = (lonLat: [number, number]) => projection(lonLat) ?? [0, 0];
 
   return (
-    <Figure
-      title="Le trafic synthétique"
-      caption="Les navires que génère le mode démo, sur les vrais contours de la Guadeloupe et de la Martinique (la Dominique et Sainte-Lucie ne sont pas dessinées). Un pétrolier attend au mouillage devant Fort-de-France et trois pêcheurs travaillent au large du Moule."
-      minWidth={340}
-    >
-      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="mx-auto h-auto w-full max-w-xl" role="img" aria-label="Carte des routes du trafic synthétique entre les ports des Petites Antilles">
-        <rect x={0} y={0} width={WIDTH} height={HEIGHT} fill="var(--page)" rx={6} />
-        {communes.map((commune) => (
-          <path key={commune.properties.code} d={path(commune) ?? ""} fill="var(--grid)" stroke="var(--baseline)" strokeWidth={0.6} />
-        ))}
-        {ROUTES.map((route) => (
-          <polyline
-            key={route.label}
-            points={route.ports.map((p) => xy(PORTS[p]).join(",")).join(" ")}
-            fill="none"
-            stroke={route.color}
-            strokeWidth={2.5}
-            strokeDasharray={route.dashed ? "7 6" : undefined}
-            strokeLinejoin="round"
-          />
-        ))}
-        {Object.entries(PORTS).map(([name, lonLat]) => {
-          const [x, y] = xy(lonLat);
-          const left = name === "Basse-Terre" || name === "Roseau";
-          return (
-            <g key={name}>
-              <circle cx={x} cy={y} r={5} fill="var(--ink)" stroke="var(--surface)" strokeWidth={2} />
-              <text
-                x={x + (left ? -10 : 10)}
-                y={y + 4}
-                textAnchor={left ? "end" : "start"}
-                fill="var(--ink)"
-                fontSize={14}
-                fontWeight={600}
-                paintOrder="stroke"
-                stroke="var(--page)"
-                strokeWidth={4}
-              >
-                {name}
-              </text>
-            </g>
-          );
-        })}
-        {(() => {
-          const [x, y] = xy(ANCHOR);
-          return (
-            <g>
-              <rect x={x - 5} y={y - 5} width={10} height={10} fill="var(--town-4)" transform={`rotate(45 ${x} ${y})`} />
-              <text x={x + 10} y={y + 18} fill="var(--ink-secondary)" fontSize={12} paintOrder="stroke" stroke="var(--page)" strokeWidth={3}>
-                pétrolier au mouillage
-              </text>
-            </g>
-          );
-        })()}
-        {(() => {
-          const [x, y] = xy(FISHING);
-          return (
-            <g>
-              <circle cx={x} cy={y} r={14} fill="var(--town-5)" opacity={0.35} />
-              <text x={x + 18} y={y + 4} fill="var(--ink-secondary)" fontSize={12} paintOrder="stroke" stroke="var(--page)" strokeWidth={3}>
-                pêcheurs
-              </text>
-            </g>
-          );
-        })()}
-      </svg>
-      <ul className="grid gap-1 text-sm text-ink-secondary sm:grid-cols-2">
-        {ROUTES.map((route) => (
-          <li key={route.label} className="flex items-center gap-2">
-            <svg width={22} height={8} aria-hidden>
-              <line x1={0} y1={4} x2={22} y2={4} stroke={route.color} strokeWidth={2.5} strokeDasharray={route.dashed ? "5 4" : undefined} />
-            </svg>
-            {route.label}
-          </li>
-        ))}
-      </ul>
-    </Figure>
+    <figure className="min-w-0 space-y-3">
+      <h3 className="font-semibold">Le trafic synthétique</h3>
+      <div className="space-y-3 rounded-lg border border-border bg-surface p-3">
+        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="mx-auto h-auto w-full max-w-xl" role="img" aria-label="Carte des routes du trafic synthétique entre les ports des Petites Antilles">
+          <rect x={0} y={0} width={WIDTH} height={HEIGHT} fill="var(--page)" rx={6} />
+          {communes.map((commune) => (
+            <path key={commune.properties.code} d={path(commune) ?? ""} fill="var(--grid)" stroke="var(--baseline)" strokeWidth={0.6} />
+          ))}
+          {ROUTES.map((route) => (
+            <polyline
+              key={route.label}
+              points={route.ports.map((p) => xy(PORTS[p]).join(",")).join(" ")}
+              fill="none"
+              stroke={route.color}
+              strokeWidth={2.5}
+              strokeDasharray={route.dashed ? "7 6" : undefined}
+              strokeLinejoin="round"
+            />
+          ))}
+          {Object.entries(PORTS).map(([name, lonLat]) => {
+            const [x, y] = xy(lonLat);
+            const left = name === "Basse-Terre" || name === "Roseau";
+            return (
+              <g key={name}>
+                <circle cx={x} cy={y} r={5} fill="var(--ink)" stroke="var(--surface)" strokeWidth={2} />
+                <text
+                  x={x + (left ? -10 : 10)}
+                  y={y + 4}
+                  textAnchor={left ? "end" : "start"}
+                  fill="var(--ink)"
+                  fontSize={14}
+                  fontWeight={600}
+                  paintOrder="stroke"
+                  stroke="var(--page)"
+                  strokeWidth={4}
+                >
+                  {name}
+                </text>
+              </g>
+            );
+          })}
+          {(() => {
+            const [x, y] = xy(ANCHOR);
+            return (
+              <g>
+                <rect x={x - 5} y={y - 5} width={10} height={10} fill="var(--town-4)" transform={`rotate(45 ${x} ${y})`} />
+                <text x={x + 10} y={y + 18} fill="var(--ink-secondary)" fontSize={12} paintOrder="stroke" stroke="var(--page)" strokeWidth={3}>
+                  pétrolier au mouillage
+                </text>
+              </g>
+            );
+          })()}
+          {(() => {
+            const [x, y] = xy(FISHING);
+            return (
+              <g>
+                <circle cx={x} cy={y} r={14} fill="var(--town-5)" opacity={0.35} />
+                <text x={x + 18} y={y + 4} fill="var(--ink-secondary)" fontSize={12} paintOrder="stroke" stroke="var(--page)" strokeWidth={3}>
+                  pêcheurs
+                </text>
+              </g>
+            );
+          })()}
+        </svg>
+        <ul className="grid gap-1 text-sm text-ink-secondary sm:grid-cols-2">
+          {ROUTES.map((route) => (
+            <li key={route.label} className="flex items-center gap-2">
+              <svg width={22} height={8} aria-hidden>
+                <line x1={0} y1={4} x2={22} y2={4} stroke={route.color} strokeWidth={2.5} strokeDasharray={route.dashed ? "5 4" : undefined} />
+              </svg>
+              {route.label}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <figcaption className="text-sm text-ink-muted">
+        Les navires que génère le mode démo, sur les vrais contours de la Guadeloupe et de la Martinique (la Dominique et
+        Sainte-Lucie ne sont pas dessinées). Un pétrolier attend au mouillage devant Fort-de-France et trois pêcheurs
+        travaillent au large du Moule.
+      </figcaption>
+    </figure>
   );
 }

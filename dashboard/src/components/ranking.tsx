@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { formatValue, type Measure, type TownStat } from "@/lib/measures";
+import { formatNumber, formatValue, type Measure, type TownStat } from "@/lib/measures";
 import { townHref } from "@/lib/routes";
 
 function Sparkline({ values, color }: { values: (number | null)[]; color: string }) {
@@ -35,7 +35,7 @@ function Delta({ measure, delta }: { measure: Measure; delta: number | null }) {
     <span className="text-ink-secondary">
       <span aria-hidden>{rounded > 0 ? "▲" : "▼"}</span>{" "}
       <span className="sr-only">{rounded > 0 ? "hausse" : "baisse"} </span>
-      {Math.abs(rounded).toFixed(measure.digits)}
+      {formatNumber(Math.abs(rounded), measure.digits)}
     </span>
   );
 }

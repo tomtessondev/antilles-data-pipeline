@@ -6,7 +6,9 @@ import { allTownSeries, latestDate } from "@/lib/analysis";
 import { buildTerritoryMaps, type Communes } from "@/lib/geo";
 import { getMarts } from "@/lib/marts";
 
-export default async function Home() {
+const EXPORTED = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" });
+
+export default async function DemoPage() {
   const marts = await getMarts();
   const series = allTownSeries(marts);
   const end = latestDate(series);
@@ -38,7 +40,7 @@ export default async function Home() {
       )}
 
       <p className="text-sm text-ink-muted">
-        Données exportées le {marts.generated_at.slice(0, 16).replace("T", " ")} UTC. Journées
+        Données exportées le {EXPORTED.format(new Date(marts.generated_at))} UTC. Journées
         complètes uniquement : le pipeline s’exécute à 6 h, heure locale, donc la journée en cours
         est toujours partielle.
       </p>

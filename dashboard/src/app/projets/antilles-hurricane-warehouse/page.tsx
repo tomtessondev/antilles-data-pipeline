@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 
-import { Code, Lesson, P, Recipe, Section, Steps, Table } from "../caribbean-sensor-pipeline/_components/prose";
+import { ProjectLayout } from "@/components/project/project-layout";
+import { Code, Lesson, P, Recipe, Section, Steps, Table } from "@/components/project/prose";
+
+import { WarehouseArchitecture } from "./_components/architecture";
 import perDecade from "./_images/hurricanes_per_decade.png";
 import perIsland from "./_images/hurricanes_per_island.png";
 
@@ -11,9 +13,6 @@ export const metadata: Metadata = {
   description:
     "Comment fonctionne antilles-hurricane-warehouse : les trajectoires d’ouragans de la NOAA et la météo des îles dans BigQuery, modélisées avec dbt, à coût maîtrisé et sans clé stockée.",
 };
-
-const REPO = "https://github.com/tomtessondev/antilles-hurricane-warehouse";
-const DOCS = "https://tomtessondev.github.io/antilles-hurricane-warehouse/";
 
 const SECTIONS: [string, string][] = [
   ["probleme", "Le problème"],
@@ -48,44 +47,7 @@ const IMAGE = "h-auto w-full rounded-lg border border-border";
 
 export default function HurricaneWarehouseProjectPage() {
   return (
-    <article className="space-y-12">
-      <header className="max-w-3xl space-y-3">
-        <Link href="/#projets" className="text-sm text-ink-secondary hover:text-ink">
-          ← Tous les projets
-        </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-          Les ouragans des Antilles depuis 1851, dans un entrepôt cloud
-        </h1>
-        <p className="text-ink-secondary">
-          <Code>antilles-hurricane-warehouse</Code> charge dans BigQuery les trajectoires de
-          toutes les tempêtes de l’Atlantique Nord depuis 1851 et la météo quotidienne de six
-          îles depuis 1940, puis les modélise avec dbt : quels ouragans sont passés près de
-          quelle île, à quelle force, et ce qu’il a plu ce jour-là.
-        </p>
-        <p className="text-sm text-ink-muted">
-          Code source :{" "}
-          <a href={REPO} className="underline hover:text-ink">
-            github.com/tomtessondev/antilles-hurricane-warehouse
-          </a>
-          {" · "}
-          <a href={DOCS} className="underline hover:text-ink">
-            documentation dbt
-          </a>
-        </p>
-      </header>
-
-      <nav aria-label="Sommaire" className="rounded-lg border border-border bg-surface p-4">
-        <p className="mb-2 text-sm font-medium text-ink-muted">Sommaire</p>
-        <ul className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-3">
-          {SECTIONS.map(([id, title]) => (
-            <li key={id}>
-              <a href={`#${id}`} className="text-ink-secondary hover:text-ink hover:underline">
-                {title}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+    <ProjectLayout slug="antilles-hurricane-warehouse" sections={SECTIONS} diagram={<WarehouseArchitecture />}>
 
       <Section id="probleme" title="Le problème et ce que fait le projet">
         <P>
@@ -123,7 +85,7 @@ export default function HurricaneWarehouseProjectPage() {
         <Table
           head={["Couche", "Contenu", "Règle"]}
           rows={[
-            ["raw", "Le fichier IBTrACS et la météo Open-Meteo, chargés par Python", "Les trajectoires sont remplacées entières (la NOAA révise le passé) ; la météo ne reçoit que les jours manquants"],
+            ["raw", "Le fichier IBTrACS et la météo Open-Meteo, chargés par Python", "Les trajectoires sont remplacées entières (la NOAA révise le passé) ; la météo recharge ses dix derniers jours (la réanalyse les complète)"],
             ["staging", "Positions typées, météo quotidienne, les six îles (seed)", "Partitionnées par saison ou par mois, regroupées par tempête ou par île ; la météo est incrémentale"],
             ["intermediate", "Chaque position à moins de 100 km d’une île, avec sa distance", "Calcul géographique de BigQuery (ST_DWITHIN)"],
             ["marts", "Passages, passages par décennie, saison en cours, météo des passages", "Une ligne par tempête et par île ; catégorie Saffir-Simpson"],
@@ -297,20 +259,6 @@ export default function HurricaneWarehouseProjectPage() {
         </div>
       </Section>
 
-      <footer className="flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm text-ink-muted">
-        <a href={REPO} className="underline hover:text-ink">
-          Dépôt GitHub
-        </a>
-        <a href={`${REPO}/blob/main/README.md`} className="underline hover:text-ink">
-          README (anglais)
-        </a>
-        <a href={DOCS} className="underline hover:text-ink">
-          Documentation dbt
-        </a>
-        <Link href="/#projets" className="underline hover:text-ink">
-          Les autres projets
-        </Link>
-      </footer>
-    </article>
+    </ProjectLayout>
   );
 }

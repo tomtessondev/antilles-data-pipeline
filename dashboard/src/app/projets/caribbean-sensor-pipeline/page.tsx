@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
-import { ArchitectureDiagram, FirmwareDiagram, MqttDiagram, QualityDiagram } from "./_components/diagrams";
-import { Code, Lesson, P, Recipe, Section, Steps, Table } from "./_components/prose";
+import { ProjectLayout } from "@/components/project/project-layout";
+import { Code, Lesson, P, Recipe, Section, Steps, Table } from "@/components/project/prose";
+
+import { FirmwareDiagram, MqttDiagram, QualityDiagram, SensorArchitecture } from "./_components/diagrams";
 
 export const metadata: Metadata = {
   title: "Projet IoT : capteurs de qualité de l’air",
   description:
     "Comment fonctionne caribbean-sensor-pipeline : stations ESP32 ou simulées, MQTT sécurisé, TimescaleDB, contrôle qualité et Grafana.",
 };
-
-const REPO = "https://github.com/tomtessondev/caribbean-sensor-pipeline";
 
 const SECTIONS: [string, string][] = [
   ["probleme", "Le problème"],
@@ -55,40 +54,7 @@ const TREE = `caribbean-sensor-pipeline/
 
 export default function SensorProjectPage() {
   return (
-    <article className="space-y-12">
-      <header className="max-w-3xl space-y-3">
-        <Link href="/#projets" className="text-sm text-ink-secondary hover:text-ink">
-          ← Tous les projets
-        </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-          Capteurs de qualité de l’air : de l’ESP32 au tableau de bord
-        </h1>
-        <p className="text-ink-secondary">
-          <Code>caribbean-sensor-pipeline</Code> collecte en continu la qualité de l’air de six
-          stations en Guadeloupe et en Martinique, la stocke, la vérifie et l’affiche. C’est un
-          pipeline IoT complet, du firmware du capteur jusqu’aux alertes.
-        </p>
-        <p className="text-sm text-ink-muted">
-          Code source :{" "}
-          <a href={REPO} className="underline hover:text-ink">
-            github.com/tomtessondev/caribbean-sensor-pipeline
-          </a>
-        </p>
-      </header>
-
-      <nav aria-label="Sommaire" className="rounded-lg border border-border bg-surface p-4">
-        <p className="mb-2 text-sm font-medium text-ink-muted">Sommaire</p>
-        <ul className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-3">
-          {SECTIONS.map(([id, title]) => (
-            <li key={id}>
-              <a href={`#${id}`} className="text-ink-secondary hover:text-ink hover:underline">
-                {title}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
+    <ProjectLayout slug="caribbean-sensor-pipeline" sections={SECTIONS} diagram={<SensorArchitecture />}>
       <Section id="probleme" title="Le problème et ce que fait le projet">
         <P>
           Aux Antilles, la qualité de l’air dépend surtout des brumes de sable venues du Sahara :
@@ -115,7 +81,6 @@ export default function SensorProjectPage() {
       </Section>
 
       <Section id="architecture" title="Architecture">
-        <ArchitectureDiagram />
         <P>
           Trois principes guident l’ensemble : <strong className="text-ink">rien ne se perd</strong>{" "}
           (accusés de réception MQTT, tampon dans la station, session persistante de l’ingestor),{" "}
@@ -369,21 +334,6 @@ export default function SensorProjectPage() {
           </Lesson>
         </div>
       </Section>
-
-      <footer className="flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm text-ink-muted">
-        <a href={REPO} className="underline hover:text-ink">
-          Dépôt GitHub
-        </a>
-        <a href={`${REPO}/blob/main/README.md`} className="underline hover:text-ink">
-          README (anglais)
-        </a>
-        <a href={`${REPO}/blob/main/firmware/README.md`} className="underline hover:text-ink">
-          Firmware : câblage et flash
-        </a>
-        <Link href="/#projets" className="underline hover:text-ink">
-          Les autres projets
-        </Link>
-      </footer>
-    </article>
+    </ProjectLayout>
   );
 }

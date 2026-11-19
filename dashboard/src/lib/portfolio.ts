@@ -41,12 +41,17 @@ export type Project = {
   /** One line per stage of the overview diagram. */
   flow: { source: string; process: string; result: string };
   menuLine: string;
+  /** The "En bref" box of the project page. */
+  problem: string;
+  result: string;
   stack: string[];
   /** Each skill the project shows, with the proof printed in the grid. */
   skills: Partial<Record<Skill, string>>;
   repo: string;
   docs?: string;
   demo?: string;
+  /** Other documents worth a link from the "En bref" box. */
+  links?: { label: string; href: string }[];
 };
 
 const GITHUB = "https://github.com/tomtessondev";
@@ -67,6 +72,10 @@ export const PROJECTS: readonly Project[] = [
       result: "Démo météo en ligne, mise à jour chaque matin",
     },
     menuLine: "Météo et air chaque matin, du lac S3 au site",
+    problem:
+      "une API ne garde pas d’historique propre, ne distingue pas mesure et prévision, et ne calcule pas d’indicateurs.",
+    result:
+      "les 31 derniers jours extraits chaque matin, gardés dans un lac S3, transformés en indicateurs journaliers et publiés en démo.",
     stack: ["Python", "S3 + Parquet", "DuckDB", "dbt", "Dagster", "Terraform", "Next.js"],
     skills: {
       ingestion: "API → lac S3 en Parquet",
@@ -97,6 +106,10 @@ export const PROJECTS: readonly Project[] = [
       result: "Tableaux et alertes Grafana",
     },
     menuLine: "Capteurs ESP32, MQTT chiffré, Grafana",
+    problem:
+      "des capteurs sur batterie, une radio qui perd des messages, des capteurs qui se bloquent : des données à ne pas croire sur parole.",
+    result:
+      "une mesure toutes les dix secondes, rien de perdu ni de dupliqué, les valeurs douteuses marquées, des alertes dans Grafana.",
     stack: ["C++ / ESP32", "MQTT", "Python", "TimescaleDB", "Grafana"],
     skills: {
       ingestion: "MQTT, capteurs ESP32",
@@ -109,6 +122,7 @@ export const PROJECTS: readonly Project[] = [
       security: "TLS et ACL MQTT",
     },
     repo: `${GITHUB}/caribbean-sensor-pipeline`,
+    links: [{ label: "Firmware : câblage et flash", href: `${GITHUB}/caribbean-sensor-pipeline/blob/main/firmware/README.md` }],
   },
   {
     slug: "caribbean-ais-stream",
@@ -125,6 +139,10 @@ export const PROJECTS: readonly Project[] = [
       result: "Carte du trafic et métriques en direct",
     },
     menuLine: "Navires en continu avec Kafka et Flink",
+    problem:
+      "savoir quels navires arrivent, partent ou attendent, et repérer les comportements anormaux, au fil de l’eau plutôt qu’une fois par jour.",
+    result:
+      "une chaîne temps réel sans perte ni doublon : activité des ports, temps passés à quai, anomalies détectées.",
     stack: ["Python", "Kafka", "Avro", "Flink SQL", "PostgreSQL", "Grafana"],
     skills: {
       ingestion: "WebSocket AIS → Kafka",
@@ -153,6 +171,10 @@ export const PROJECTS: readonly Project[] = [
       result: "Anomalies, extrêmes et records par île",
     },
     menuLine: "Le climat depuis 1950 sur Databricks",
+    problem:
+      "2,3 millions de journées-stations depuis 1950, dans des fichiers réécrits plusieurs fois par mois et renommés chaque année.",
+    result:
+      "des tables Delta en trois couches, mises à jour par un job Databricks qui ne réécrit que ce qui a changé.",
     stack: ["PySpark", "Delta Lake", "Databricks", "Unity Catalog"],
     skills: {
       ingestion: "API data.gouv.fr",
@@ -180,6 +202,10 @@ export const PROJECTS: readonly Project[] = [
       result: "Passages d’ouragans par île et par décennie",
     },
     menuLine: "Les ouragans depuis 1851 dans BigQuery",
+    problem:
+      "la copie publique des trajectoires d’ouragans s’arrête en 2023, et la météo des îles n’y est pas.",
+    result:
+      "508 passages de tempêtes recensés près des six îles, mis à jour chaque jour pour moins de 1 % du quota gratuit.",
     stack: ["BigQuery", "dbt", "Python", "Terraform", "GitHub Actions"],
     skills: {
       ingestion: "Fichier NOAA, API ERA5",

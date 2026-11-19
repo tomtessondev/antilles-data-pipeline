@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 
-import { Code, Lesson, P, Recipe, Section, Steps, Table } from "../caribbean-sensor-pipeline/_components/prose";
+import { ProjectLayout } from "@/components/project/project-layout";
+import { Code, Lesson, P, Recipe, Section, Steps, Table } from "@/components/project/prose";
+
+import { LakehouseArchitecture } from "./_components/architecture";
 import catalog from "./_images/databricks-catalog.png";
 import job from "./_images/databricks-job.png";
 import anomaly from "./_images/temperature_anomaly.png";
@@ -13,8 +15,6 @@ export const metadata: Metadata = {
   description:
     "Comment fonctionne antilles-climate-lakehouse : les séries quotidiennes de Météo-France en couches bronze, argent et or, en PySpark et Delta Lake, déployées sur Databricks.",
 };
-
-const REPO = "https://github.com/tomtessondev/antilles-climate-lakehouse";
 
 const SECTIONS: [string, string][] = [
   ["probleme", "Le problème"],
@@ -48,40 +48,7 @@ const IMAGE = "h-auto w-full rounded-lg border border-border";
 
 export default function LakehouseProjectPage() {
   return (
-    <article className="space-y-12">
-      <header className="max-w-3xl space-y-3">
-        <Link href="/#projets" className="text-sm text-ink-secondary hover:text-ink">
-          ← Tous les projets
-        </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-          Le climat de la Guadeloupe et de la Martinique depuis 1950, en lakehouse
-        </h1>
-        <p className="text-ink-secondary">
-          <Code>antilles-climate-lakehouse</Code> reprend les mesures quotidiennes de toutes les
-          stations Météo-France des deux îles depuis 1950 et les range en trois couches (bronze,
-          argent, or) avec PySpark et Delta Lake. Le même code est testé sur un ordinateur et
-          tourne sur Databricks.
-        </p>
-        <p className="text-sm text-ink-muted">
-          Code source :{" "}
-          <a href={REPO} className="underline hover:text-ink">
-            github.com/tomtessondev/antilles-climate-lakehouse
-          </a>
-        </p>
-      </header>
-
-      <nav aria-label="Sommaire" className="rounded-lg border border-border bg-surface p-4">
-        <p className="mb-2 text-sm font-medium text-ink-muted">Sommaire</p>
-        <ul className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-3">
-          {SECTIONS.map(([id, title]) => (
-            <li key={id}>
-              <a href={`#${id}`} className="text-ink-secondary hover:text-ink hover:underline">
-                {title}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+    <ProjectLayout slug="antilles-climate-lakehouse" sections={SECTIONS} diagram={<LakehouseArchitecture />}>
 
       <Section id="probleme" title="Le problème et ce que fait le projet">
         <P>
@@ -275,17 +242,6 @@ export default function LakehouseProjectPage() {
         </div>
       </Section>
 
-      <footer className="flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm text-ink-muted">
-        <a href={REPO} className="underline hover:text-ink">
-          Dépôt GitHub
-        </a>
-        <a href={`${REPO}/blob/main/README.md`} className="underline hover:text-ink">
-          README (anglais)
-        </a>
-        <Link href="/#projets" className="underline hover:text-ink">
-          Les autres projets
-        </Link>
-      </footer>
-    </article>
+    </ProjectLayout>
   );
 }

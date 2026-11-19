@@ -8,10 +8,10 @@ import { type Period, PERIODS } from "@/components/explorer";
 import { Pm10Status } from "@/components/pm10-status";
 import { Segmented } from "@/components/segmented";
 import { addDays, EU_PM10_DAILY_LIMIT_UGM3, formatDay, type TownSeries, windowDays } from "@/lib/analysis";
-import { formatValue, MEASURES, townStat } from "@/lib/measures";
+import { formatNumber, formatValue, MEASURES, townStat } from "@/lib/measures";
 
 function cell(value: number | null | undefined, digits = 0): string {
-  return value == null ? "–" : value.toFixed(digits);
+  return value == null ? "–" : formatNumber(value, digits);
 }
 
 export function TownView({ series, end }: { series: TownSeries; end: string }) {
@@ -56,7 +56,7 @@ export function TownView({ series, end }: { series: TownSeries; end: string }) {
                   ? "Pas de période précédente à comparer"
                   : delta === 0
                     ? `Identique aux ${period} jours précédents`
-                    : `${delta > 0 ? "▲" : "▼"} ${Math.abs(delta).toFixed(measure.digits)} vs les ${period} jours précédents`}
+                    : `${delta > 0 ? "▲" : "▼"} ${formatNumber(Math.abs(delta), measure.digits)} vs les ${period} jours précédents`}
               </p>
             </div>
           );
