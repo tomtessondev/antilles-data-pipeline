@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ArchitectureDiagram, FirmwareDiagram, MqttDiagram, QualityDiagram } from "./_components/diagrams";
-import { Code, Lesson, P, Recipe, Section, Steps, Table } from "./_components/prose";
+import { Code, Lesson, P, Recipe, Section, Steps, Table } from "@/components/project/prose";
 
 export const metadata: Metadata = {
   title: "Projet IoT : capteurs de qualité de l’air",

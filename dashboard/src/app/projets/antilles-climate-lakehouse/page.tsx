@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import { Code, Lesson, P, Recipe, Section, Steps, Table } from "../caribbean-sensor-pipeline/_components/prose";
+import { Code, Lesson, P, Recipe, Section, Steps, Table } from "@/components/project/prose";
 import catalog from "./_images/databricks-catalog.png";
 import job from "./_images/databricks-job.png";
 import anomaly from "./_images/temperature_anomaly.png";
