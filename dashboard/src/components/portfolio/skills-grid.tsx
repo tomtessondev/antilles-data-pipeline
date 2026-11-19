@@ -34,7 +34,12 @@ export function SkillsGrid() {
                 const proof = p.skills[skill];
                 return (
                   <td key={p.slug} className={`px-3 py-3 ${proof ? "" : "text-ink-muted"}`}>
-                    {proof ?? <span aria-label="non couvert">—</span>}
+                    {proof ?? (
+                      <>
+                        <span aria-hidden="true">—</span>
+                        <span className="sr-only">non couvert</span>
+                      </>
+                    )}
                   </td>
                 );
               })}

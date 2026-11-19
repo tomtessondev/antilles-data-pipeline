@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 
 import { ProjectLayout } from "@/components/project/project-layout";
+import { Prose } from "@/components/docs/doc-ui";
 import { Code, Lesson, Recipe, Section, Table } from "@/components/project/prose";
 
 import aisTraffic from "./_images/ais-traffic.png";
@@ -35,9 +36,6 @@ const SECTIONS: [string, string][] = [
   ["feuille-de-route", "Feuille de route"],
 ];
 
-function Prose({ children }: { children: ReactNode }) {
-  return <div className="max-w-3xl space-y-3 leading-relaxed text-ink-secondary [&_strong]:text-ink">{children}</div>;
-}
 
 function Block({ children }: { children: string }) {
   return (

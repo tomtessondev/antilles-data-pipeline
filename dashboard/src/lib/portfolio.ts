@@ -40,7 +40,6 @@ export type Project = {
   clientValue: string;
   /** One line per stage of the overview diagram. */
   flow: { source: string; process: string; result: string };
-  menuLine: string;
   /** The "En bref" box of the project page. */
   problem: string;
   result: string;
@@ -71,7 +70,6 @@ export const PROJECTS: readonly Project[] = [
       process: "Lac S3 → DuckDB → dbt, orchestré par Dagster",
       result: "Démo météo en ligne, mise à jour chaque matin",
     },
-    menuLine: "Météo et air chaque matin, du lac S3 au site",
     problem:
       "une API ne garde pas d’historique propre, ne distingue pas mesure et prévision, et ne calcule pas d’indicateurs.",
     result:
@@ -105,7 +103,6 @@ export const PROJECTS: readonly Project[] = [
       process: "Validation → TimescaleDB, règles de qualité",
       result: "Tableaux et alertes Grafana",
     },
-    menuLine: "Capteurs ESP32, MQTT chiffré, Grafana",
     problem:
       "des capteurs sur batterie, une radio qui perd des messages, des capteurs qui se bloquent : des données à ne pas croire sur parole.",
     result:
@@ -138,7 +135,6 @@ export const PROJECTS: readonly Project[] = [
       process: "Kafka (Avro) → Flink SQL : trajets, anomalies",
       result: "Carte du trafic et métriques en direct",
     },
-    menuLine: "Navires en continu avec Kafka et Flink",
     problem:
       "savoir quels navires arrivent, partent ou attendent, et repérer les comportements anormaux, au fil de l’eau plutôt qu’une fois par jour.",
     result:
@@ -170,7 +166,6 @@ export const PROJECTS: readonly Project[] = [
       process: "Bronze → argent → or, en PySpark et Delta",
       result: "Anomalies, extrêmes et records par île",
     },
-    menuLine: "Le climat depuis 1950 sur Databricks",
     problem:
       "2,3 millions de journées-stations depuis 1950, dans des fichiers réécrits plusieurs fois par mois et renommés chaque année.",
     result:
@@ -201,7 +196,6 @@ export const PROJECTS: readonly Project[] = [
       process: "BigQuery + dbt, coût plafonné et vérifié",
       result: "Passages d’ouragans par île et par décennie",
     },
-    menuLine: "Les ouragans depuis 1851 dans BigQuery",
     problem:
       "la copie publique des trajectoires d’ouragans s’arrête en 2023, et la météo des îles n’y est pas.",
     result:

@@ -40,8 +40,9 @@ export function OverviewDiagram() {
         Les cinq projets, chacun de sa source à son résultat, et ce qu’ils ont en commun.
       </figcaption>
 
-      {/* Wide screens: one column per project, one row per stage. */}
-      <div className="hidden grid-cols-[6rem_repeat(5,minmax(0,1fr))] gap-3 md:grid">
+      {/* Wide screens: one column per project, one row per stage. Hidden from screen readers,
+          which read the same content as the list below, one project at a time. */}
+      <div aria-hidden="true" className="hidden grid-cols-[6rem_repeat(5,minmax(0,1fr))] gap-3 md:grid">
         <div />
         {PROJECTS.map((p) => (
           <div key={p.slug} className="pb-1.5">
@@ -58,8 +59,9 @@ export function OverviewDiagram() {
         ))}
       </div>
 
-      {/* Phones: one block per project, its stages one under the other. */}
-      <ol className="flex flex-col gap-4 md:hidden">
+      {/* Phones: one block per project, its stages one under the other; on wide screens the
+          same list stays for screen readers only. */}
+      <ol className="flex flex-col gap-4 md:sr-only">
         {PROJECTS.map((p) => (
           <li key={p.slug} className="flex flex-col gap-2">
             <Family project={p} />

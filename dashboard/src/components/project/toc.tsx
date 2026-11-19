@@ -21,7 +21,19 @@ export function Toc({ sections }: { sections: [id: string, title: string][] }) {
       const element = document.getElementById(id);
       if (element) observer.observe(element);
     }
-    return () => observer.disconnect();
+    // A short last section never reaches the upper third: at the bottom of the page, it is
+    // the one being read.
+    const atBottom = () => {
+      const last = sections.at(-1);
+      if (last && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+        setCurrent(last[0]);
+      }
+    };
+    window.addEventListener("scroll", atBottom, { passive: true });
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", atBottom);
+    };
   }, [sections]);
 
   return (
