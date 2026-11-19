@@ -7,7 +7,7 @@ export function SkillsGrid() {
   const skills = Object.keys(SKILL_LABELS) as Skill[];
   return (
     <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
-      <table className="w-full min-w-[50rem] border-collapse text-[13.5px] leading-snug">
+      <table className="w-full min-w-[56rem] border-collapse text-[13.5px] leading-snug">
         <caption className="sr-only">Savoir-faire démontrés par chaque projet</caption>
         <thead>
           <tr>

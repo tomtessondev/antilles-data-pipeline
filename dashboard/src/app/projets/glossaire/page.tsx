@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Glossaire",
-  description: "Les termes techniques des cinq projets, expliqués simplement.",
+  description: "Les termes techniques des six projets, expliqués simplement.",
 };
 
 type Term = { term: string; definition: string };
@@ -95,6 +95,17 @@ const GROUPS: { title: string; terms: Term[] }[] = [
     ],
   },
   {
+    title: "API",
+    terms: [
+      { term: "API REST", definition: "Interface qui expose des données par des adresses web (routes) : une application demande /v1/weather et reçoit du JSON." },
+      { term: "Clé d’API", definition: "Code secret envoyé avec chaque appel pour identifier qui appelle ; seule son empreinte est stockée côté serveur." },
+      { term: "Quota (limitation de débit)", definition: "Nombre maximal d’appels par minute pour une clé ; au-delà, l’API répond 429 et indique quand réessayer." },
+      { term: "Pagination", definition: "Découper une longue liste en pages ; un curseur renvoyé avec chaque page permet de demander la suivante." },
+      { term: "OpenAPI", definition: "Description standard d’une API (routes, paramètres, réponses), dont on tire une documentation interactive où l’on peut l’essayer." },
+      { term: "Migration de schéma", definition: "Script versionné qui fait évoluer la structure d’une base (tables, colonnes) et s’applique avant chaque déploiement." },
+    ],
+  },
+  {
     title: "Cloud, déploiement et web",
     terms: [
       { term: "S3", definition: "Service de stockage d’objets d’AWS : des fichiers dans des « buckets », durables et peu coûteux." },
@@ -117,7 +128,7 @@ export default function GlossaryPage() {
           ← Tous les projets
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">Glossaire</h1>
-        <p className="text-ink-secondary">Les termes des cinq projets, en une phrase chacun.</p>
+        <p className="text-ink-secondary">Les termes des six projets, en une phrase chacun.</p>
       </header>
       {GROUPS.map((group) => (
         <section key={group.title} className="space-y-3">

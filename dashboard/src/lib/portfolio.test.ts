@@ -15,6 +15,7 @@ describe("portfolio", () => {
       "caribbean-ais-stream",
       "antilles-climate-lakehouse",
       "antilles-hurricane-warehouse",
+      "antilles-weather-api",
     ]);
   });
 
@@ -35,7 +36,7 @@ describe("portfolio", () => {
   it("walks the order with previous and next", () => {
     expect(neighbours("antilles-data-pipeline")).toEqual({ previous: null, next: PROJECTS[1] });
     expect(neighbours("caribbean-ais-stream")).toEqual({ previous: PROJECTS[1], next: PROJECTS[3] });
-    expect(neighbours("antilles-hurricane-warehouse")).toEqual({ previous: PROJECTS[3], next: null });
+    expect(neighbours("antilles-weather-api")).toEqual({ previous: PROJECTS[4], next: null });
   });
 
   it("rejects an unknown slug", () => {

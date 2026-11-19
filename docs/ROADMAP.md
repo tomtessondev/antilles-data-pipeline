@@ -37,7 +37,7 @@ Each one is a new repo, sized for one or two weekends.
 | **Cloud warehouse** (done: [antilles-hurricane-warehouse](https://github.com/tomtessondev/antilles-hurricane-warehouse)) | dbt on a real warehouse, cost-aware: hurricane passages near the Antilles since 1851 and the islands' weather since 1940 | BigQuery, dbt, Terraform, Workload Identity Federation, GitHub Actions |
 | **Streaming** (done: [caribbean-ais-stream](https://github.com/tomtessondev/caribbean-ais-stream)) | Live feed processed in real time, e.g. earthquakes (USGS) or Caribbean shipping (AIS) | Kafka or Redpanda, Python consumer, Docker Compose |
 | **IoT / embedded to cloud** (done: [caribbean-sensor-pipeline](https://github.com/tomtessondev/caribbean-sensor-pipeline)) | Bridges FPGA/embedded background with data: sensor (ESP32 or simulated) to MQTT to a time-series DB to Grafana | MQTT, TimescaleDB or InfluxDB, Grafana |
-| **API service** | Serve the marts through a typed REST API with auth and tests | FastAPI, Pydantic, PostgreSQL, Docker |
+| **API service** (done: [antilles-weather-api](https://github.com/tomtessondev/antilles-weather-api)) | The marts served by a typed REST API with keys, quotas and tests | FastAPI, Pydantic, PostgreSQL (Neon), Docker, Cloud Run, Terraform |
 | **ML on top of data** | Rain forecast or solar output per town, tracked experiments | scikit-learn, MLflow |
 
 ## Suggested order

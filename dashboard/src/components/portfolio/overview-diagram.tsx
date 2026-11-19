@@ -32,17 +32,17 @@ function Box({ text, tinted }: { text: string; tinted: boolean }) {
   );
 }
 
-/** The five projects side by side, each from source to result, and what they share. */
+/** The six projects side by side, each from source to result, and what they share. */
 export function OverviewDiagram() {
   return (
     <figure className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-5 sm:p-7">
       <figcaption className="sr-only">
-        Les cinq projets, chacun de sa source à son résultat, et ce qu’ils ont en commun.
+        Les six projets, chacun de sa source à son résultat, et ce qu’ils ont en commun.
       </figcaption>
 
       {/* Wide screens: one column per project, one row per stage. Hidden from screen readers,
           which read the same content as the list below, one project at a time. */}
-      <div aria-hidden="true" className="hidden grid-cols-[6rem_repeat(5,minmax(0,1fr))] gap-3 md:grid">
+      <div aria-hidden="true" className="hidden grid-cols-[6rem_repeat(6,minmax(0,1fr))] gap-3 md:grid">
         <div />
         {PROJECTS.map((p) => (
           <div key={p.slug} className="pb-1.5">

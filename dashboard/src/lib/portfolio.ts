@@ -1,9 +1,10 @@
-// The five projects of the portfolio, in reading order. The navigation, the home page,
+// The six projects of the portfolio, in reading order. The navigation, the home page,
 // the skills grid and the previous / next links all read this list.
 
 export type Skill =
   | "ingestion"
   | "modelling"
+  | "serving"
   | "streaming"
   | "orchestration"
   | "iac"
@@ -17,6 +18,7 @@ export type Skill =
 export const SKILL_LABELS: Record<Skill, string> = {
   ingestion: "Ingestion",
   modelling: "Modélisation",
+  serving: "Exposition des données",
   streaming: "Streaming",
   orchestration: "Orchestration",
   iac: "Infrastructure as code",
@@ -29,7 +31,13 @@ export const SKILL_LABELS: Record<Skill, string> = {
 };
 
 /** CSS variable of each family's colour (defined in globals.css, light and dark). */
-export type FamilyColor = "--family-batch" | "--family-iot" | "--family-stream" | "--family-lakehouse" | "--family-warehouse";
+export type FamilyColor =
+  | "--family-batch"
+  | "--family-iot"
+  | "--family-stream"
+  | "--family-lakehouse"
+  | "--family-warehouse"
+  | "--family-api";
 
 export type Project = {
   slug: string;
@@ -78,6 +86,7 @@ export const PROJECTS: readonly Project[] = [
     skills: {
       ingestion: "API → lac S3 en Parquet",
       modelling: "dbt sur DuckDB",
+      serving: "Export JSON, site Next.js",
       orchestration: "Dagster, chaque matin",
       iac: "Terraform (AWS)",
       tests: "pytest, tests dbt",
@@ -215,16 +224,50 @@ export const PROJECTS: readonly Project[] = [
     repo: `${GITHUB}/antilles-hurricane-warehouse`,
     docs: "https://tomtessondev.github.io/antilles-hurricane-warehouse/",
   },
+  {
+    slug: "antilles-weather-api",
+    family: "API",
+    color: "--family-api",
+    title: "La météo des Antilles, servie par une API",
+    pitch:
+      "Les indicateurs quotidiens du pipeline batch, chargés chaque matin dans PostgreSQL et servis par une API REST documentée et protégée par des clés, hébergée sur Cloud Run.",
+    clientValue:
+      "une API de données prête pour la production : contrat typé, clés et quotas, documentation interactive, aucun coût au repos.",
+    flow: {
+      source: "marts.json du pipeline batch, chaque matin",
+      process: "Chargement dans PostgreSQL (Neon), FastAPI",
+      result: "API REST publique, documentée sur /docs",
+    },
+    problem:
+      "les données du pipeline n’étaient lisibles que par ce site : aucune autre application ne pouvait les interroger proprement.",
+    result:
+      "une API publique, testable depuis le navigateur avec une clé de démo, qui dort quand personne ne l’appelle.",
+    stack: ["FastAPI", "PostgreSQL (Neon)", "Cloud Run", "Terraform", "GitHub Actions"],
+    skills: {
+      ingestion: "marts.json → PostgreSQL",
+      modelling: "Schéma SQL, migrations Alembic",
+      serving: "REST FastAPI, OpenAPI",
+      orchestration: "GitHub Actions, chaque jour",
+      iac: "Terraform (Cloud Run)",
+      tests: "pytest sur vrai PostgreSQL",
+      quality: "Contrat Pydantic, fichiers refusés",
+      cost: "Mise en veille, zéro instance",
+      security: "Clés hachées, quotas, CI sans clé",
+      cloud: "Google Cloud Run, Neon",
+    },
+    repo: `${GITHUB}/antilles-weather-api`,
+    links: [{ label: "API en ligne (/docs)", href: "https://weather-api-v4mw6h4rqa-uk.a.run.app/docs" }],
+  },
 ];
 
 /** What every project shares, shown under the overview diagram. */
 export const SHARED: { what: string; where: string }[] = [
-  { what: "Les mêmes îles", where: "les cinq projets" },
-  { what: "Open-Meteo", where: "batch · entrepôt" },
+  { what: "Les mêmes îles", where: "les six projets" },
+  { what: "Open-Meteo", where: "batch · entrepôt · API" },
   { what: "dbt", where: "batch · entrepôt" },
-  { what: "Terraform", where: "batch · entrepôt" },
+  { what: "Terraform", where: "batch · entrepôt · API" },
   { what: "Grafana", where: "IoT · temps réel" },
-  { what: "GitHub Actions", where: "les cinq projets" },
+  { what: "GitHub Actions", where: "les six projets" },
 ];
 
 export function projectBySlug(slug: string): Project {

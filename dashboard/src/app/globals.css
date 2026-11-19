@@ -39,6 +39,7 @@
   --family-stream: #eb6834;
   --family-lakehouse: #eda100;
   --family-warehouse: #e87ba4;
+  --family-api: #6250d6;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -75,6 +76,7 @@
     --family-stream: #d95926;
     --family-lakehouse: #c98500;
     --family-warehouse: #d4729a;
+    --family-api: #9085e9;
   }
 }
 
@@ -112,6 +114,7 @@
   --color-family-stream: var(--family-stream);
   --color-family-lakehouse: var(--family-lakehouse);
   --color-family-warehouse: var(--family-warehouse);
+  --color-family-api: var(--family-api);
   --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
 }
