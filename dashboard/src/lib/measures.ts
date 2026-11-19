@@ -152,6 +152,18 @@ export function periodHighlights(series: TownSeries[], end: string, length: numb
   };
 }
 
+const NUMBER_FORMATS = new Map<number, Intl.NumberFormat>();
+
+/** A number for display, French style (decimal comma), with a fixed number of decimals. */
+export function formatNumber(value: number, digits: number): string {
+  let format = NUMBER_FORMATS.get(digits);
+  if (!format) {
+    format = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    NUMBER_FORMATS.set(digits, format);
+  }
+  return format.format(value);
+}
+
 export function formatValue(measure: Measure, value: number | null): string {
-  return value === null ? "–" : value.toFixed(measure.digits);
+  return value === null ? "–" : formatNumber(value, measure.digits);
 }

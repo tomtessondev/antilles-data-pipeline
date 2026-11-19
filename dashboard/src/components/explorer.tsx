@@ -12,6 +12,7 @@ import { townColor } from "@/lib/colors";
 import type { TerritoryMap } from "@/lib/geo";
 import {
   type Extreme,
+  formatNumber,
   measureByKey,
   type MeasureKey,
   MEASURES,
@@ -106,7 +107,7 @@ export function Explorer({ series, maps, end }: Props) {
         />
         <Kpi
           label="Plus forte chaleur"
-          value={highlights.hottest ? highlights.hottest.value.toFixed(1) : "–"}
+          value={highlights.hottest ? formatNumber(highlights.hottest.value, 1) : "–"}
           unit="°C"
           detail={highlights.hottest && where(highlights.hottest)}
         />

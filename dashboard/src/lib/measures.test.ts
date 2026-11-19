@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { addDays, dateRange, type TownDay, type TownSeries, windowDays } from "./analysis";
-import { aggregate, measureByKey, periodHighlights, townStat } from "./measures";
+import { aggregate, formatNumber, formatValue, measureByKey, periodHighlights, townStat } from "./measures";
 
 function day(date: string, rain: number, pm10: number): TownDay {
   return {
@@ -90,5 +90,14 @@ describe("periodHighlights", () => {
     expect(highlights.exceedanceDays).toBe(2);
     expect(highlights.dustPeak).toEqual({ value: 140, town: "Fort-de-France", date: "2026-11-03" });
     expect(highlights.wettestTown).toEqual({ value: 9, town: "Fort-de-France" });
+  });
+});
+
+describe("number formatting", () => {
+  it("writes decimals the French way", () => {
+    expect(formatNumber(27.44, 1)).toBe("27,4");
+    expect(formatNumber(-3, 1)).toBe("-3,0");
+    expect(formatValue(measureByKey("temperature"), 27.44)).toBe("27,4");
+    expect(formatValue(measureByKey("temperature"), null)).toBe("–");
   });
 });
