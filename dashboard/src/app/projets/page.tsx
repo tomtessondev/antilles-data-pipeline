@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Projets",
   description:
-    "Quatre projets de data engineering sur les Antilles : un pipeline batch, une chaîne IoT, un flux temps réel et un lakehouse. Comment ils fonctionnent et comment les modifier.",
+    "Cinq projets de data engineering sur les Antilles : un pipeline batch, une chaîne IoT, un flux temps réel, un lakehouse et un entrepôt cloud. Comment ils fonctionnent et comment les modifier.",
 };
 
 type Project = {
@@ -62,6 +62,17 @@ const PROJECTS: Project[] = [
     stack: ["PySpark", "Delta Lake", "Databricks", "Unity Catalog"],
     repo: "https://github.com/tomtessondev/antilles-climate-lakehouse",
   },
+  {
+    slug: "antilles-hurricane-warehouse",
+    kind: "Entrepôt cloud",
+    name: "antilles-hurricane-warehouse",
+    pitch:
+      "Chaque ouragan passé près des Antilles depuis 1851, et la pluie et le vent sur chaque île ces jours-là depuis 1940, modélisés avec dbt dans BigQuery et mis à jour chaque jour.",
+    client:
+      "Un entrepôt cloud qui ne coûte rien : chaque requête plafonnée, chaque modèle chiffré avant d’être lancé, aucune clé stockée.",
+    stack: ["BigQuery", "dbt", "Python", "Terraform", "GitHub Actions"],
+    repo: "https://github.com/tomtessondev/antilles-hurricane-warehouse",
+  },
 ];
 
 export default function ProjectsPage() {
@@ -70,10 +81,10 @@ export default function ProjectsPage() {
       <header className="max-w-3xl space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-ink-muted">Portfolio</p>
         <h1 className="text-3xl font-semibold tracking-tight text-balance">
-          Quatre projets de data engineering, sur les mêmes îles
+          Cinq projets de data engineering, sur les mêmes îles
         </h1>
         <p className="text-ink-secondary">
-          Un pipeline batch, une chaîne IoT, un flux temps réel et un lakehouse : les grandes familles de
+          Un pipeline batch, une chaîne IoT, un flux temps réel, un lakehouse et un entrepôt cloud : les grandes familles de
           projets de données, construites sur des données réelles des Antilles. Chaque page
           explique le fonctionnement, les technologies, l’organisation du code et comment le
           modifier.
@@ -117,7 +128,7 @@ export default function ProjectsPage() {
         <Link href="/projets/glossaire" className="underline underline-offset-2">
           glossaire
         </Link>{" "}
-        explique les termes des quatre projets.
+        explique les termes des cinq projets.
       </p>
     </article>
   );

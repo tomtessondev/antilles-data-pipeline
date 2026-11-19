@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Glossaire",
-  description: "Les termes techniques des trois projets, expliqués simplement.",
+  description: "Les termes techniques des cinq projets, expliqués simplement.",
 };
 
 type Term = { term: string; definition: string };
@@ -83,6 +83,18 @@ const GROUPS: { title: string; terms: Term[] }[] = [
     ],
   },
   {
+    title: "Entrepôt cloud et BigQuery",
+    terms: [
+      { term: "Entrepôt de données cloud", definition: "Base analytique hébergée et gérée par un fournisseur (BigQuery, Snowflake) : pas de serveur à administrer, on paie le stockage et les requêtes." },
+      { term: "BigQuery", definition: "L’entrepôt de données de Google Cloud : SQL sur des tables en colonnes, facturé selon les octets lus par chaque requête." },
+      { term: "Clustering", definition: "Trier les lignes d’une table selon une colonne (ici la tempête ou l’île) pour qu’une requête filtrée ne lise que les blocs utiles." },
+      { term: "Dry run", definition: "Requête planifiée mais pas exécutée : BigQuery indique combien d’octets elle lirait, gratuitement. Sert à contrôler le coût avant de lancer." },
+      { term: "Plafond d’octets facturés", definition: "Limite posée sur une requête (maximum_bytes_billed) : si elle doit lire plus, elle échoue au lieu de coûter." },
+      { term: "Fédération d’identité (Workload Identity Federation)", definition: "L’équivalent Google de l’OIDC : GitHub Actions échange un jeton contre des droits Google temporaires, sans clé de compte de service stockée." },
+      { term: "Réanalyse", definition: "Reconstitution de la météo passée par un modèle qui assimile toutes les observations disponibles (ici ERA5, depuis 1940) : une série complète, mais qui lisse les extrêmes." },
+    ],
+  },
+  {
     title: "Cloud, déploiement et web",
     terms: [
       { term: "S3", definition: "Service de stockage d’objets d’AWS : des fichiers dans des « buckets », durables et peu coûteux." },
@@ -105,7 +117,7 @@ export default function GlossaryPage() {
           ← Tous les projets
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">Glossaire</h1>
-        <p className="text-ink-secondary">Les termes des trois projets, en une phrase chacun.</p>
+        <p className="text-ink-secondary">Les termes des cinq projets, en une phrase chacun.</p>
       </header>
       {GROUPS.map((group) => (
         <section key={group.title} className="space-y-3">
