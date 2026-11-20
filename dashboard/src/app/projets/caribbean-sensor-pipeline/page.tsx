@@ -85,11 +85,20 @@ export default function SensorProjectPage() {
       <Section id="direct" title="Démo en direct">
         <P>
           La démo en ligne utilise les <strong className="text-ink">stations automatiques de
-          Météo-France</strong> en Guadeloupe et en Martinique : des données réelles, une mesure toutes
-          les 6 minutes. Un pont les publie sur le même broker MQTT que les stations du projet, avec le
-          même contrat de message ; elles suivent donc le même chemin (validation, base temporelle,
-          contrôle qualité). Le simulateur reste en place pour les tests : il produit à volonté les
-          pannes et les cas limites qu’un vrai réseau ne fournit pas sur commande.
+          Météo-France</strong> en Guadeloupe, en Martinique, à Saint-Barthélemy et à Saint-Martin : des
+          données réelles, une mesure toutes les 6 minutes. Un pont les publie sur le même broker MQTT que
+          les stations du projet, avec le même contrat de message ; elles suivent donc le même chemin
+          (validation, base temporelle, contrôle qualité). Le simulateur reste en place pour les tests :
+          il produit à volonté les pannes et les cas limites qu’un vrai réseau ne fournit pas sur
+          commande.
+        </P>
+        <P>
+          Deux rythmes cohabitent : la plupart des stations transmettent chaque mesure dans les minutes
+          qui suivent, les autres envoient leur heure écoulée d’un seul bloc, parfois avec une heure de
+          retard. Chaque station a donc son propre seuil avant d’être déclarée hors ligne : 30 minutes de
+          silence pour les premières, 100 minutes pour les secondes. Si le pont s’interrompt (service
+          arrêté, API indisponible), il rattrape à son redémarrage tous les créneaux manqués, jusqu’à
+          3 heures en arrière.
         </P>
         <P>
           La carte affiche la dernière mesure de chaque station, colorée selon la température, et se met
