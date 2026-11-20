@@ -7,6 +7,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import type { z } from "zod";
 
 import { ageLabel, fetchLive } from "@/lib/live";
+import { browserVisibility, poll } from "@/lib/poll";
 
 import { LiveOffline } from "./offline";
 
@@ -130,21 +131,17 @@ function useLive<T>(url: string | undefined, schema: z.ZodType<T>, intervalMs: n
 
   useEffect(() => {
     if (!url) return;
-    let alive = true;
-    const tick = async () => {
-      const result = await fetchLive(url, schema);
-      if (!alive) return;
-      const now = new Date();
-      setState((previous) =>
-        result.ok ? { data: result.data, lastOk: now, failed: false, now } : { ...previous, failed: true, now },
-      );
-    };
-    void tick();
-    const timer = setInterval(tick, intervalMs);
-    return () => {
-      alive = false;
-      clearInterval(timer);
-    };
+    return poll(
+      () => fetchLive(url, schema),
+      (result) => {
+        const now = new Date();
+        setState((previous) =>
+          result.ok ? { data: result.data, lastOk: now, failed: false, now } : { ...previous, failed: true, now },
+        );
+      },
+      intervalMs,
+      browserVisibility,
+    );
   }, [url, schema, intervalMs]);
 
   return state;
