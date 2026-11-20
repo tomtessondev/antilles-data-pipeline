@@ -8,6 +8,7 @@ import type { z } from "zod";
 
 import { ageLabel, fetchLive } from "@/lib/live";
 import { browserVisibility, poll } from "@/lib/poll";
+import { reconcile } from "@/lib/reconcile";
 
 import { LiveOffline } from "./offline";
 
@@ -30,21 +31,33 @@ const LESSER_ANTILLES: [[number, number], [number, number]] = [
 const ARROW =
   '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 1 L14 15 L8 11 L2 15 Z" fill="var(--family-stream)" stroke="var(--surface)" stroke-width="1.2" stroke-linejoin="round"/></svg>';
 
-/** Draws the point inside the marker's element; maplibre owns the element's own classes. */
+function look(point: LivePoint): { className: string; background: string; arrow: boolean } {
+  if (point.kind === "station") {
+    return { className: "size-3.5 rounded-full border-2 border-surface shadow-sm", background: point.color, arrow: false };
+  }
+  if (point.rotation === null) {
+    return { className: "size-2.5 rounded-full border border-surface", background: "var(--family-stream)", arrow: false };
+  }
+  return { className: "size-4", background: "", arrow: true };
+}
+
+/**
+ * Draws the point inside the marker's element, changing only what differs from the last
+ * poll; maplibre owns the element's own classes.
+ */
 function paint(element: HTMLElement, point: LivePoint) {
   element.title = point.title;
-  const shape = document.createElement("div");
-  if (point.kind === "station") {
-    shape.className = "size-3.5 rounded-full border-2 border-surface shadow-sm";
-    shape.style.background = point.color;
-  } else if (point.rotation === null) {
-    shape.className = "size-2.5 rounded-full border border-surface";
-    shape.style.background = "var(--family-stream)";
-  } else {
-    shape.className = "size-4";
-    shape.innerHTML = ARROW;
+  const shape =
+    element.firstElementChild instanceof HTMLElement
+      ? element.firstElementChild
+      : element.appendChild(document.createElement("div"));
+  const { className, background, arrow } = look(point);
+  if (shape.className !== className) shape.className = className;
+  shape.style.background = background;
+  if (shape.dataset.arrow !== String(arrow)) {
+    shape.innerHTML = arrow ? ARROW : "";
+    shape.dataset.arrow = String(arrow);
   }
-  element.replaceChildren(shape);
 }
 
 /** A MapLibre map of the Lesser Antilles with one DOM marker per point, kept in sync. */
@@ -94,25 +107,17 @@ function MapCanvas({ points }: { points: LivePoint[] }) {
 
   useEffect(() => {
     if (!map) return;
-    const seen = new Set<string>();
-    for (const point of points) {
-      seen.add(point.id);
-      let marker = markers.current.get(point.id);
-      if (!marker) {
-        marker = new map.Marker({ element: document.createElement("div"), rotationAlignment: "map" })
+    reconcile(markers.current, points, {
+      create: (point) =>
+        new map.Marker({ element: document.createElement("div"), rotationAlignment: "map" })
           .setLngLat([point.lon, point.lat])
-          .addTo(map.map);
-        markers.current.set(point.id, marker);
-      }
-      marker.setLngLat([point.lon, point.lat]).setRotation(point.kind === "ship" ? (point.rotation ?? 0) : 0);
-      paint(marker.getElement(), point);
-    }
-    for (const [id, marker] of markers.current) {
-      if (!seen.has(id)) {
-        marker.remove();
-        markers.current.delete(id);
-      }
-    }
+          .addTo(map.map),
+      update: (marker, point) => {
+        marker.setLngLat([point.lon, point.lat]).setRotation(point.kind === "ship" ? (point.rotation ?? 0) : 0);
+        paint(marker.getElement(), point);
+      },
+      remove: (marker) => marker.remove(),
+    });
   }, [map, points]);
 
   return (
