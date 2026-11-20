@@ -93,7 +93,7 @@ export default function SensorProjectPage() {
         </P>
         <P>
           La carte affiche la dernière mesure de chaque station, colorée selon la température, et se met
-          à jour toutes les minutes. Survolez une station pour voir ses valeurs.
+          à jour toutes les minutes. Cliquez ou appuyez sur une station pour voir ses valeurs.
         </P>
         <StationsMap baseUrl={process.env.NEXT_PUBLIC_SENSORS_LIVE_URL} />
       </Section>

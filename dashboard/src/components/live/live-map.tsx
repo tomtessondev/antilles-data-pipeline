@@ -2,7 +2,7 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import type { Map as MapLibreMap, Marker } from "maplibre-gl";
+import type { Map as MapLibreMap, Marker, Popup } from "maplibre-gl";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import type { z } from "zod";
 
@@ -47,6 +47,7 @@ function look(point: LivePoint): { className: string; background: string; arrow:
  */
 function paint(element: HTMLElement, point: LivePoint) {
   element.title = point.title;
+  element.setAttribute("aria-label", point.title);
   const shape =
     element.firstElementChild instanceof HTMLElement
       ? element.firstElementChild
@@ -64,7 +65,7 @@ function paint(element: HTMLElement, point: LivePoint) {
 function MapCanvas({ points }: { points: LivePoint[] }) {
   const container = useRef<HTMLDivElement>(null);
   const markers = useRef(new Map<string, Marker>());
-  const [map, setMap] = useState<{ map: MapLibreMap; Marker: typeof Marker } | null>(null);
+  const [map, setMap] = useState<{ map: MapLibreMap; Marker: typeof Marker; Popup: typeof Popup } | null>(null);
   const [unsupported, setUnsupported] = useState(false);
 
   useEffect(() => {
@@ -93,7 +94,7 @@ function MapCanvas({ points }: { points: LivePoint[] }) {
       }
       instance.touchZoomRotate.disableRotation();
       scheme.addEventListener("change", onScheme);
-      setMap({ map: instance, Marker: maplibre.Marker });
+      setMap({ map: instance, Marker: maplibre.Marker, Popup: maplibre.Popup });
     });
 
     const current = markers.current;
@@ -108,12 +109,19 @@ function MapCanvas({ points }: { points: LivePoint[] }) {
   useEffect(() => {
     if (!map) return;
     reconcile(markers.current, points, {
-      create: (point) =>
-        new map.Marker({ element: document.createElement("div"), rotationAlignment: "map" })
+      create: (point) => {
+        // The title shows on hover only; a click or a tap opens the popup, also on touch screens.
+        const element = document.createElement("div");
+        element.setAttribute("role", "button");
+        element.style.cursor = "pointer";
+        return new map.Marker({ element, rotationAlignment: "map" })
           .setLngLat([point.lon, point.lat])
-          .addTo(map.map),
+          .setPopup(new map.Popup({ closeButton: false, offset: 12, maxWidth: "260px", className: "live-popup" }))
+          .addTo(map.map);
+      },
       update: (marker, point) => {
         marker.setLngLat([point.lon, point.lat]).setRotation(point.kind === "ship" ? (point.rotation ?? 0) : 0);
+        if (marker.getElement().title !== point.title) marker.getPopup().setText(point.title);
         paint(marker.getElement(), point);
       },
       remove: (marker) => marker.remove(),
