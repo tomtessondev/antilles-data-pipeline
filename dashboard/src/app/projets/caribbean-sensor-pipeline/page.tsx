@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { StationsMap } from "@/components/live/stations-map";
 import { ProjectLayout } from "@/components/project/project-layout";
 import { Code, Lesson, P, Recipe, Section, Steps, Table } from "@/components/project/prose";
 
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 
 const SECTIONS: [string, string][] = [
   ["probleme", "Le problème"],
+  ["direct", "Démo en direct"],
   ["architecture", "Architecture"],
   ["passage", "Un passage dans le pipeline"],
   ["technologies", "Technologies"],
@@ -78,6 +80,22 @@ export default function SensorProjectPage() {
           firmware d’une vraie station ESP32 est écrit, testé et compilé ; il parle exactement le
           même protocole.
         </P>
+      </Section>
+
+      <Section id="direct" title="Démo en direct">
+        <P>
+          La démo en ligne utilise les <strong className="text-ink">stations automatiques de
+          Météo-France</strong> en Guadeloupe et en Martinique : des données réelles, une mesure toutes
+          les 6 minutes. Un pont les publie sur le même broker MQTT que les stations du projet, avec le
+          même contrat de message ; elles suivent donc le même chemin (validation, base temporelle,
+          contrôle qualité). Le simulateur reste en place pour les tests : il produit à volonté les
+          pannes et les cas limites qu’un vrai réseau ne fournit pas sur commande.
+        </P>
+        <P>
+          La carte affiche la dernière mesure de chaque station, colorée selon la température, et se met
+          à jour toutes les minutes. Survolez une station pour voir ses valeurs.
+        </P>
+        <StationsMap baseUrl={process.env.NEXT_PUBLIC_SENSORS_LIVE_URL} />
       </Section>
 
       <Section id="architecture" title="Architecture">

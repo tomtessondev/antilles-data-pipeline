@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
 
+import { ShipsMap } from "@/components/live/ships-map";
 import { ProjectLayout } from "@/components/project/project-layout";
 import { Prose } from "@/components/docs/doc-ui";
 import { Code, Lesson, Recipe, Section, Table } from "@/components/project/prose";
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
 
 const SECTIONS: [string, string][] = [
   ["probleme", "Le problème"],
+  ["direct", "Démo en direct"],
   ["ais", "Qu'est-ce que l'AIS ?"],
   ["kafka", "Partitions et compactage"],
   ["parcours", "Un passage dans le pipeline"],
@@ -333,6 +335,19 @@ export default function CaribbeanAisStreamPage() {
             ordre respecté par navire.
           </p>
         </Prose>
+      </Section>
+
+      <Section id="direct" title="Démo en direct">
+        <Prose>
+          <p>
+            La carte montre les navires captés autour des Petites Antilles au cours des 30 dernières
+            minutes, depuis le flux réel d&apos;aisstream.io. Elle interroge toutes les 5 secondes un petit
+            service en lecture seule placé devant la base PostgreSQL du pipeline : chaque flèche suit le
+            cap du navire, ou sa route quand le cap n&apos;est pas transmis. Survolez un navire pour voir son
+            nom, sa vitesse et sa zone portuaire.
+          </p>
+        </Prose>
+        <ShipsMap baseUrl={process.env.NEXT_PUBLIC_AIS_LIVE_URL} />
       </Section>
 
       <Section id="ais" title="Qu'est-ce que l'AIS ?">
