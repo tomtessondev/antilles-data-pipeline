@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { StationsMap } from "@/components/live/stations-map";
 import { ProjectLayout } from "@/components/project/project-layout";
 import { Code, Lesson, P, Recipe, Section, Steps, Table } from "@/components/project/prose";
 
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 
 const SECTIONS: [string, string][] = [
   ["probleme", "Le problème"],
+  ["direct", "Démo en direct"],
   ["architecture", "Architecture"],
   ["passage", "Un passage dans le pipeline"],
   ["technologies", "Technologies"],
@@ -78,6 +80,32 @@ export default function SensorProjectPage() {
           firmware d’une vraie station ESP32 est écrit, testé et compilé ; il parle exactement le
           même protocole.
         </P>
+      </Section>
+
+      <Section id="direct" title="Démo en direct">
+        <P>
+          La démo en ligne utilise les <strong className="text-ink">stations automatiques de
+          Météo-France</strong> en Guadeloupe, en Martinique, à Saint-Barthélemy et à Saint-Martin : des
+          données réelles, une mesure toutes les 6 minutes. Un pont les publie sur le même broker MQTT que
+          les stations du projet, avec le même contrat de message ; elles suivent donc le même chemin
+          (validation, base temporelle, contrôle qualité). Le simulateur reste en place pour les tests :
+          il produit à volonté les pannes et les cas limites qu’un vrai réseau ne fournit pas sur
+          commande.
+        </P>
+        <P>
+          Toutes les stations mesurent toutes les 6 minutes, mais deux rythmes de livraison cohabitent :
+          la moitié transmet chaque mesure dans les minutes qui suivent, l’autre envoie son heure
+          écoulée d’un seul bloc, parfois avec une heure de retard. Le seuil avant de déclarer une
+          station hors ligne est donc réglé par station, à partir du rythme observé sur les vraies
+          données : 100 minutes de silence aujourd’hui. Si le pont s’interrompt (service
+          arrêté, API indisponible), il rattrape à son redémarrage tous les créneaux manqués, jusqu’à
+          3 heures en arrière.
+        </P>
+        <P>
+          La carte affiche la dernière mesure de chaque station, colorée selon la température, et se met
+          à jour toutes les minutes. Cliquez ou appuyez sur une station pour voir ses valeurs.
+        </P>
+        <StationsMap baseUrl={process.env.NEXT_PUBLIC_SENSORS_LIVE_URL} />
       </Section>
 
       <Section id="architecture" title="Architecture">
