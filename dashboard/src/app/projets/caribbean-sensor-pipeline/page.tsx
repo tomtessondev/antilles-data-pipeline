@@ -93,10 +93,11 @@ export default function SensorProjectPage() {
           commande.
         </P>
         <P>
-          Deux rythmes cohabitent : la plupart des stations transmettent chaque mesure dans les minutes
-          qui suivent, les autres envoient leur heure écoulée d’un seul bloc, parfois avec une heure de
-          retard. Chaque station a donc son propre seuil avant d’être déclarée hors ligne : 30 minutes de
-          silence pour les premières, 100 minutes pour les secondes. Si le pont s’interrompt (service
+          Toutes les stations mesurent toutes les 6 minutes, mais deux rythmes de livraison cohabitent :
+          la moitié transmet chaque mesure dans les minutes qui suivent, l’autre envoie son heure
+          écoulée d’un seul bloc, parfois avec une heure de retard. Le seuil avant de déclarer une
+          station hors ligne est donc réglé par station, à partir du rythme observé sur les vraies
+          données : 100 minutes de silence aujourd’hui. Si le pont s’interrompt (service
           arrêté, API indisponible), il rattrape à son redémarrage tous les créneaux manqués, jusqu’à
           3 heures en arrière.
         </P>
