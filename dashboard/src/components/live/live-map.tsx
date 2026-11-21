@@ -1,11 +1,10 @@
 "use client";
 
-import "maplibre-gl/dist/maplibre-gl.css";
-
-import type { Map as MapLibreMap, Marker, Popup } from "maplibre-gl";
+import type { Marker } from "maplibre-gl";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import type { z } from "zod";
 
+import { LESSER_ANTILLES, NoWebGL, useMapLibre } from "@/components/map/use-maplibre";
 import { ageLabel, fetchLive } from "@/lib/live";
 import { browserVisibility, poll } from "@/lib/poll";
 import { reconcile } from "@/lib/reconcile";
@@ -15,18 +14,9 @@ import { LiveOffline } from "./offline";
 export type LivePoint = { id: string; lon: number; lat: number; title: string } & (
   | { kind: "ship"; rotation: number | null }
   | { kind: "station"; color: string }
+  // A diverging colour whose neutral middle is the surface colour: outlined in ink to stay visible.
+  | { kind: "anomaly"; color: string }
 );
-
-const STYLES = {
-  light: "https://tiles.openfreemap.org/styles/positron",
-  dark: "https://tiles.openfreemap.org/styles/dark",
-};
-const DARK = "(prefers-color-scheme: dark)";
-// Grenada to Anguilla: the Lesser Antilles, Guadeloupe and Martinique in the middle.
-const LESSER_ANTILLES: [[number, number], [number, number]] = [
-  [-63.4, 11.9],
-  [-59.4, 18.4],
-];
 
 const ARROW =
   '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 1 L14 15 L8 11 L2 15 Z" fill="var(--family-stream)" stroke="var(--surface)" stroke-width="1.2" stroke-linejoin="round"/></svg>';
@@ -34,6 +24,9 @@ const ARROW =
 function look(point: LivePoint): { className: string; background: string; arrow: boolean } {
   if (point.kind === "station") {
     return { className: "size-3.5 rounded-full border-2 border-surface shadow-sm", background: point.color, arrow: false };
+  }
+  if (point.kind === "anomaly") {
+    return { className: "size-4 rounded-full border-2 border-ink-secondary shadow-sm", background: point.color, arrow: false };
   }
   if (point.rotation === null) {
     return { className: "size-2.5 rounded-full border border-surface", background: "var(--family-stream)", arrow: false };
@@ -62,48 +55,13 @@ function paint(element: HTMLElement, point: LivePoint) {
 }
 
 /** A MapLibre map of the Lesser Antilles with one DOM marker per point, kept in sync. */
-function MapCanvas({ points }: { points: LivePoint[] }) {
-  const container = useRef<HTMLDivElement>(null);
+export function MapCanvas({ points }: { points: LivePoint[] }) {
+  const { container, loaded: map, unsupported } = useMapLibre(LESSER_ANTILLES);
   const markers = useRef(new Map<string, Marker>());
-  const [map, setMap] = useState<{ map: MapLibreMap; Marker: typeof Marker; Popup: typeof Popup } | null>(null);
-  const [unsupported, setUnsupported] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-    let instance: MapLibreMap | null = null;
-    const scheme = window.matchMedia(DARK);
-    const onScheme = () => instance?.setStyle(scheme.matches ? STYLES.dark : STYLES.light);
-
-    void import("maplibre-gl").then((maplibre) => {
-      if (cancelled || !container.current) return;
-      // The bundled copy of maplibre cannot locate its worker from import.meta.url.
-      maplibre.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
-      try {
-        instance = new maplibre.Map({
-          container: container.current,
-          style: scheme.matches ? STYLES.dark : STYLES.light,
-          bounds: LESSER_ANTILLES,
-          dragRotate: false,
-          pitchWithRotate: false,
-          touchPitch: false,
-        });
-      } catch {
-        // No WebGL in this browser.
-        setUnsupported(true);
-        return;
-      }
-      instance.touchZoomRotate.disableRotation();
-      scheme.addEventListener("change", onScheme);
-      setMap({ map: instance, Marker: maplibre.Marker, Popup: maplibre.Popup });
-    });
-
     const current = markers.current;
-    return () => {
-      cancelled = true;
-      scheme.removeEventListener("change", onScheme);
-      current.clear();
-      instance?.remove();
-    };
+    return () => current.clear();
   }, []);
 
   useEffect(() => {
@@ -130,9 +88,7 @@ function MapCanvas({ points }: { points: LivePoint[] }) {
 
   return (
     <div ref={container} className="size-full">
-      {unsupported ? (
-        <p className="p-4 text-sm text-ink-secondary">Carte indisponible : ce navigateur ne prend pas en charge WebGL.</p>
-      ) : null}
+      {unsupported ? <NoWebGL /> : null}
     </div>
   );
 }
