@@ -59,8 +59,8 @@ export const recordSchema = z.object({
 export const climateSchema = z.object({
   generated_at: z.string(),
   normal_period: z.string(),
-  stations: z.array(stationSchema),
-  territory_anomalies: z.array(territoryAnomalySchema),
+  stations: z.array(stationSchema).min(1),
+  territory_anomalies: z.array(territoryAnomalySchema).min(1),
   station_year_anomalies: z.array(stationYearSchema),
   extremes: z.array(extremeSchema),
   records: z.array(recordSchema),

@@ -62,7 +62,8 @@ static PNGs only (not interactive).
 
 - `src/lib/hurricanes.ts`, `src/lib/climate.ts`: zod contracts above, server loaders with
   `HURRICANES_URL` / `CLIMATE_URL` overrides and the public URLs as defaults, bundled
-  samples for CI and offline builds, `generated_at` shown on the page.
+  samples for CI and offline builds, `generated_at` shown on the page. An export with no
+  tracks, passages, stations or territory anomalies counts as broken: the sample is shown.
 - Hurricane explorer (section "Résultats"): MapLibre map of tracks (GeoJSON line layer,
   segments coloured by wind / category), filters season range, island, minimum
   category; selecting a storm shows its passages and the J−1..J+1 rain/wind of

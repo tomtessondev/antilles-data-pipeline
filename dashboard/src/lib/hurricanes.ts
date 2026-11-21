@@ -57,10 +57,10 @@ export const trackSchema = z.object({
 export const hurricanesSchema = z.object({
   generated_at: z.string(),
   islands: z.array(islandSchema),
-  passages: z.array(passageSchema),
+  passages: z.array(passageSchema).min(1),
   passage_weather: z.array(passageWeatherSchema),
   by_decade: z.array(decadeSchema),
-  tracks: z.array(trackSchema),
+  tracks: z.array(trackSchema).min(1),
 });
 
 export type Category = z.infer<typeof categorySchema>;

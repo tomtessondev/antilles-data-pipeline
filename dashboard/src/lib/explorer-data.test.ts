@@ -24,6 +24,15 @@ describe("bundled samples", () => {
     const passages = hurricanesSample.passages.map(({ max_wind_kt, ...rest }) => ({ ...rest, max_wind: max_wind_kt }));
     expect(hurricanesSchema.safeParse({ ...hurricanesSample, passages }).success).toBe(false);
   });
+
+  it("rejects an empty publication, so the sample is shown instead", () => {
+    for (const key of ["tracks", "passages"] as const) {
+      expect(hurricanesSchema.safeParse({ ...hurricanesSample, [key]: [] }).success, key).toBe(false);
+    }
+    for (const key of ["stations", "territory_anomalies"] as const) {
+      expect(climateSchema.safeParse({ ...climateSample, [key]: [] }).success, key).toBe(false);
+    }
+  });
 });
 
 // Real exports, when given: HURRICANES_FILE / CLIMATE_FILE point at a fresh export of the
