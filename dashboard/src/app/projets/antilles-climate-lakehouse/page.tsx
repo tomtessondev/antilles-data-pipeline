@@ -5,10 +5,10 @@ import { ProjectLayout } from "@/components/project/project-layout";
 import { Code, Lesson, P, Recipe, Section, Steps, Table } from "@/components/project/prose";
 
 import { LakehouseArchitecture } from "./_components/architecture";
+import { ClimateResults } from "./_components/climate-results";
 import catalog from "./_images/databricks-catalog.png";
 import job from "./_images/databricks-job.png";
 import anomaly from "./_images/temperature_anomaly.png";
-import hotDays from "./_images/very_hot_days.png";
 
 export const metadata: Metadata = {
   title: "Projet lakehouse : le climat des Antilles depuis 1950",
@@ -76,7 +76,6 @@ export default function LakehouseProjectPage() {
           des décennies, et cette comparaison de chaque station à elle-même en limite l’effet
           sans l’annuler.
         </P>
-        <Image src={hotDays} alt="Nombre de jours à 32 °C ou plus par an, moyenne par station à longue série, Guadeloupe et Martinique, de 1991 à 2025" className={IMAGE} />
         <P>
           Les jours à 32 °C ou plus sont comptés sur un panel de stations à longue série :
           jusqu’à 10 en Martinique, mais 2 au plus en Guadeloupe, où peu de stations ont une
@@ -84,6 +83,12 @@ export default function LakehouseProjectPage() {
           80 % de ses jours sont mesurés : trois mois de données ne passent pas pour une année
           calme.
         </P>
+        <P>
+          L’explorateur ci-dessous lit l’export mensuel des tables or : l’écart
+          à la normale mois par mois pour chaque territoire, l’écart annuel de chaque station
+          avec ses records, et les jours extrêmes du panel.
+        </P>
+        <ClimateResults />
       </Section>
 
       <Section id="architecture" title="Architecture">
