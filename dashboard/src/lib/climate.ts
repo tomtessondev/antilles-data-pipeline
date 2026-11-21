@@ -29,7 +29,8 @@ export const territoryAnomalySchema = z.object({
   month: z.number().int().min(1).max(12),
   tx_anomaly: z.number().nullable(),
   rr_anomaly: z.number().nullable(),
-  stations: z.number().int(),
+  tx_stations: z.number().int(),
+  rr_stations: z.number().int(),
 });
 
 export const stationYearSchema = z.object({

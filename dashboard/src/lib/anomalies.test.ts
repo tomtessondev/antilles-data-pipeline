@@ -13,7 +13,7 @@ import {
 import type { TerritoryAnomaly } from "./climate";
 
 function anomaly(year: number, month: number, tx: number | null, territory = "Martinique"): TerritoryAnomaly {
-  return { territory, year, month, tx_anomaly: tx, rr_anomaly: tx === null ? null : tx * -100, stations: 3 };
+  return { territory, year, month, tx_anomaly: tx, rr_anomaly: tx === null ? null : tx * -100, tx_stations: 3, rr_stations: 3 };
 }
 
 describe("heatMapCells", () => {

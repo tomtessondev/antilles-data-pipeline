@@ -49,11 +49,14 @@ static PNGs only (not interactive).
 - Contract (`climate.json`, target < 600 KB):
   `{generated_at, normal_period: "1991-2020",
    stations: [{station_id, name, territory, lat, lon, altitude_m, first_year, last_year}],
-   territory_anomalies: [{territory, year, month, tx_anomaly, rr_anomaly, stations}],
+   territory_anomalies: [{territory, year, month, tx_anomaly, rr_anomaly, tx_stations,
+                         rr_stations}],
    station_year_anomalies: [{station_id, year, tx_anomaly, months}],
    extremes: [{territory, year, indicator, panel_size, mean_per_station}],
    records: [{station_id, territory, indicator, value, date}]}`
-  (anomalies rounded to 0.01; station-year only with ≥ 10 complete months).
+  (anomalies rounded to 0.01; station-year only with ≥ 10 complete months; `tx_stations` and
+  `rr_stations` count the stations behind each mean, which differ when a station measures
+  rain but not temperature).
 
 ## Site (antilles-data-pipeline/dashboard)
 
