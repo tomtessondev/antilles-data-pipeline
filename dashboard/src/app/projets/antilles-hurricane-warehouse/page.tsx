@@ -68,8 +68,9 @@ export default function HurricaneWarehouseProjectPage() {
         <P>
           Un passage, c’est une tempête dont la trajectoire est venue à moins de 100 km du point
           d’une île ; sa catégorie est celle de son vent le plus fort dans ce rayon. Les années
-          2010 comptent deux ouragans de catégorie 5 : Irma à Saint-Martin et Saint-Barthélemy,
-          Maria à la Dominique, en septembre 2017.
+          2010 comptent deux ouragans de catégorie 5, en septembre 2017 : Irma à Saint-Martin et
+          Saint-Barthélemy, Maria à la Dominique (à 6 km), mais aussi à 72 km de la Guadeloupe et
+          62 km de la Martinique, encore en catégorie 5 dans ce rayon de 100 km.
         </P>
         <P>
           L’explorateur ci-dessous lit l’export que le build quotidien publie depuis les marts :
