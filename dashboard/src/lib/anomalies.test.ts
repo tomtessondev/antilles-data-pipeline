@@ -42,7 +42,13 @@ describe("warmestYear", () => {
     const full = Array.from({ length: 12 }, (_, i) => anomaly(2024, i + 1, 1));
     const partial = [anomaly(2025, 1, 3), anomaly(2025, 2, 3)];
     const { cells } = heatMapCells([...full, ...partial], "Martinique", "tx");
-    expect(warmestYear(cells)).toEqual({ year: 2024, mean: 1 });
+    expect(warmestYear(cells, 2026)).toEqual({ year: 2024, mean: 1 });
+  });
+
+  it("leaves out the export's own year, still in progress", () => {
+    const year = (y: number, tx: number) => Array.from({ length: 12 }, (_, i) => anomaly(y, i + 1, tx));
+    const { cells } = heatMapCells([...year(2024, 1), ...year(2025, 2)], "Martinique", "tx");
+    expect(warmestYear(cells, 2025)).toEqual({ year: 2024, mean: 1 });
   });
 });
 

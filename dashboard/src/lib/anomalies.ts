@@ -62,11 +62,14 @@ export function heatMapCells(rows: TerritoryAnomaly[], territory: string, variab
   return { years, cells };
 }
 
-/** The year whose months (at least 10 of them) are on average furthest above the normal. */
-export function warmestYear(cells: HeatCell[]): { year: number; mean: number } | null {
+/**
+ * The year whose months (at least 10 of them) are on average furthest above the normal,
+ * leaving out `exportYear`, which is still in progress.
+ */
+export function warmestYear(cells: HeatCell[], exportYear: number): { year: number; mean: number } | null {
   const byYear = new Map<number, number[]>();
   for (const cell of cells) {
-    if (cell.value !== null) byYear.set(cell.year, [...(byYear.get(cell.year) ?? []), cell.value]);
+    if (cell.value !== null && cell.year !== exportYear) byYear.set(cell.year, [...(byYear.get(cell.year) ?? []), cell.value]);
   }
   let best: { year: number; mean: number } | null = null;
   for (const [year, values] of byYear) {

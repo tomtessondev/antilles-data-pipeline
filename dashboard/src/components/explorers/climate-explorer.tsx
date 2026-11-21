@@ -52,7 +52,7 @@ function ScaleLegend({ variable }: { variable: Variable }) {
 
 function HeatMap({ data, territory, variable }: { data: Climate; territory: string; variable: Variable }) {
   const { years, cells } = useMemo(() => heatMapCells(data.territory_anomalies, territory, variable), [data, territory, variable]);
-  const warmest = variable === "tx" ? warmestYear(cells) : null;
+  const warmest = variable === "tx" ? warmestYear(cells, new Date(data.generated_at).getUTCFullYear()) : null;
   const unit = variable === "tx" ? "de la température maximale" : "du cumul de pluie";
   const summary =
     `Écart mensuel ${unit} à la normale ${data.normal_period}, ${territoryLabel(territory)}, de ${years[0]} à ${years.at(-1)}.` +
