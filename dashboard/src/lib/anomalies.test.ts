@@ -1,0 +1,114 @@
+import { describe, expect, it } from "vitest";
+
+import {
+  anomalyColor,
+  extremeRows,
+  formatAnomaly,
+  heatMapCells,
+  recordLines,
+  stationAnomalies,
+  territories,
+  warmestYear,
+} from "./anomalies";
+import type { TerritoryAnomaly } from "./climate";
+
+function anomaly(year: number, month: number, tx: number | null, territory = "Martinique"): TerritoryAnomaly {
+  return { territory, year, month, tx_anomaly: tx, rr_anomaly: tx === null ? null : tx * -100, stations: 3 };
+}
+
+describe("heatMapCells", () => {
+  const rows = [anomaly(2022, 3, 0.5), anomaly(2024, 1, 1.2), anomaly(2024, 2, null), anomaly(2023, 6, 9, "Guadeloupe")];
+
+  it("fills every year and month between the first and last, for one territory", () => {
+    const { years, cells } = heatMapCells(rows, "Martinique", "tx");
+    expect(years).toEqual([2022, 2023, 2024]);
+    expect(cells).toHaveLength(36);
+    expect(cells[2]).toEqual({ year: 2022, month: 3, value: 0.5 });
+    expect(cells[24]).toEqual({ year: 2024, month: 1, value: 1.2 });
+    expect(cells.filter((cell) => cell.value !== null)).toHaveLength(2);
+  });
+
+  it("reads the rain anomaly when asked", () => {
+    expect(heatMapCells(rows, "Martinique", "rr").cells[2].value).toBe(-50);
+  });
+
+  it("is empty for an unknown territory", () => {
+    expect(heatMapCells(rows, "Mars", "tx")).toEqual({ years: [], cells: [] });
+  });
+});
+
+describe("warmestYear", () => {
+  it("needs at least ten months to rate a year", () => {
+    const full = Array.from({ length: 12 }, (_, i) => anomaly(2024, i + 1, 1));
+    const partial = [anomaly(2025, 1, 3), anomaly(2025, 2, 3)];
+    const { cells } = heatMapCells([...full, ...partial], "Martinique", "tx");
+    expect(warmestYear(cells)).toEqual({ year: 2024, mean: 1 });
+  });
+});
+
+describe("anomalyColor and formatAnomaly", () => {
+  it("puts warm months on the orange side and dry months on the orange side too", () => {
+    expect(anomalyColor(1, "tx")).toBe("color-mix(in oklab, var(--seq-orange-high) 50%, var(--surface))");
+    expect(anomalyColor(-150, "rr")).toBe("color-mix(in oklab, var(--seq-orange-high) 100%, var(--surface))");
+    expect(anomalyColor(75, "rr")).toBe("color-mix(in oklab, var(--seq-blue-high) 50%, var(--surface))");
+  });
+
+  it("formats with a sign and the unit", () => {
+    expect(formatAnomaly(1.234, "tx")).toBe("+1,2 °C");
+    expect(formatAnomaly(-42.4, "rr")).toBe("-42 mm");
+    expect(formatAnomaly(null, "tx")).toBe("pas de valeur");
+  });
+});
+
+describe("territories", () => {
+  it("lists the main islands first", () => {
+    expect(territories([{ territory: "Saint-Martin" }, { territory: "Martinique" }, { territory: "Guadeloupe" }, { territory: "Martinique" }])).toEqual([
+      "Guadeloupe",
+      "Martinique",
+      "Saint-Martin",
+    ]);
+  });
+});
+
+describe("stationAnomalies", () => {
+  it("keeps the selected year", () => {
+    const rows = [
+      { station_id: "A", year: 2023, tx_anomaly: 0.4, months: 12 },
+      { station_id: "A", year: 2024, tx_anomaly: 1.1, months: 11 },
+    ];
+    expect([...stationAnomalies(rows, 2024)]).toEqual([["A", 1.1]]);
+  });
+});
+
+describe("extremeRows", () => {
+  it("pivots territories into columns and keeps the largest panel", () => {
+    const { rows, panels } = extremeRows(
+      [
+        { territory: "Martinique", year: 2024, indicator: "very_hot_days", panel_size: 4, mean_per_station: 9.5 },
+        { territory: "Guadeloupe", year: 2024, indicator: "very_hot_days", panel_size: 2, mean_per_station: 1 },
+        { territory: "Martinique", year: 2023, indicator: "very_hot_days", panel_size: 3, mean_per_station: 6 },
+        { territory: "Martinique", year: 2023, indicator: "heavy_rain_days", panel_size: 9, mean_per_station: 3 },
+      ],
+      "very_hot_days",
+    );
+    expect(rows.map((row) => [row.year, row.Martinique, row.Guadeloupe ?? null])).toEqual([
+      [2023, 6, null],
+      [2024, 9.5, 1],
+    ]);
+    expect(panels).toEqual({ Martinique: 4, Guadeloupe: 2 });
+  });
+});
+
+describe("recordLines", () => {
+  it("lists a station's records in a fixed order, French formatted", () => {
+    const lines = recordLines(
+      [
+        { station_id: "A", territory: "Martinique", indicator: "max_rr_mm", value: 312.4, date: "2010-10-30" },
+        { station_id: "A", territory: "Martinique", indicator: "max_tx_c", value: 35.2, date: "2020-09-26" },
+        { station_id: "B", territory: "Martinique", indicator: "max_tx_c", value: 34, date: "2020-09-26" },
+      ],
+      "A",
+    );
+    expect(lines).toEqual(["Tx max 35,2 °C (26/09/2020)", "pluie max 312,4 mm (30/10/2010)"]);
+  });
+});
