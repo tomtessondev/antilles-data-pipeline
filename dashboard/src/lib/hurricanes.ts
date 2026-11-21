@@ -44,8 +44,8 @@ export const decadeSchema = z.object({
   passages: z.number().int(),
 });
 
-/** One fix: longitude, latitude, wind in knots (unknown for old storms), time. */
-export const trackPointSchema = z.tuple([z.number(), z.number(), z.number().nullable(), z.string()]);
+/** One fix: longitude, latitude, wind in knots (unknown for old storms). */
+export const trackPointSchema = z.tuple([z.number(), z.number(), z.number().nullable()]);
 
 export const trackSchema = z.object({
   sid: z.string(),

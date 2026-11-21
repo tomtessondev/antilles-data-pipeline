@@ -31,9 +31,10 @@ static PNGs only (not interactive).
    passage_weather: [{passage_id, date, day_offset, precipitation_mm, wind_max_kmh,
                       gust_max_kmh}],
    by_decade: [{island, decade, category, passages}],
-   tracks: [{sid, name, season, points: [[lon, lat, wind_kt | null, iso_time]]}]}`
+   tracks: [{sid, name, season, points: [[lon, lat, wind_kt | null]]}]}`
   — tracks only for storms in `fct_storm_passages`, coordinates rounded to 0.1°,
-  clipped to lon −100..−20, lat 0..45.
+  clipped to lon −100..−20, lat 0..45; no time per fix (the map does not use it, and it
+  weighed on the page, which carries the data to the client).
 
 ## Lakehouse (antilles-climate-lakehouse)
 
