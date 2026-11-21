@@ -102,6 +102,14 @@ export function extremeRows(extremes: Extreme[], indicator: (typeof INDICATORS)[
   return { rows: [...rows.values()].sort((a, b) => a.year - b.year), panels };
 }
 
+/** Below this many stations, a panel's mean follows one station's quirks more than the climate. */
+export const MIN_PANEL = 3;
+
+/** The territories whose largest panel is too small for a trend. */
+export function smallPanels(panels: Record<string, number>): string[] {
+  return Object.keys(panels).filter((territory) => panels[territory] < MIN_PANEL);
+}
+
 const RECORD_LABELS: Record<(typeof RECORD_INDICATORS)[number], { label: string; unit: string }> = {
   max_tx_c: { label: "Tx max", unit: "°C" },
   max_rr_mm: { label: "pluie max", unit: "mm" },

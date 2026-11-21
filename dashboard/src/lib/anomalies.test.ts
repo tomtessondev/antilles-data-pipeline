@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   anomalyColor,
   extremeRows,
+  smallPanels,
   formatAnomaly,
   heatMapCells,
   recordLines,
@@ -116,5 +117,11 @@ describe("recordLines", () => {
       "A",
     );
     expect(lines).toEqual(["Tx max 35,2 °C (26/09/2020)", "pluie max 312,4 mm (30/10/2010)"]);
+  });
+});
+
+describe("smallPanels", () => {
+  it("lists the territories whose panel has fewer than 3 stations", () => {
+    expect(smallPanels({ Guadeloupe: 5, Martinique: 3, "Saint-Martin": 1, "Saint-Barthelemy": 2 })).toEqual(["Saint-Martin", "Saint-Barthelemy"]);
   });
 });

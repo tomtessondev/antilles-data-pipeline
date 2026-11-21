@@ -12,7 +12,9 @@ import {
   heatMapCells,
   INDICATORS,
   LIMITS,
+  MIN_PANEL,
   recordLines,
+  smallPanels,
   stationAnomalies,
   territories,
   territoryLabel,
@@ -197,6 +199,7 @@ function ExtremesChart({ data }: { data: Climate }) {
   const { rows, panels } = useMemo(() => extremeRows(data.extremes, indicator), [data, indicator]);
   const names = useMemo(() => territories(data.extremes.filter((extreme) => extreme.indicator === indicator)), [data, indicator]);
   const tooltip = useMemo(() => makeExtremeTooltip(names, "j"), [names]);
+  const small = smallPanels(panels);
   const { detail } = INDICATOR_LABELS[indicator];
 
   return (
@@ -210,12 +213,22 @@ function ExtremesChart({ data }: { data: Climate }) {
       <ul aria-label="Territoires" className="flex flex-wrap gap-4 text-sm text-ink-secondary">
         {names.map((territory, i) => (
           <li key={territory} className="flex items-center gap-1.5">
-            <span aria-hidden="true" className="h-0.5 w-4 rounded" style={{ background: townColor(i) }} />
+            <span
+              aria-hidden="true"
+              className={`w-4 border-t-2 ${small.includes(territory) ? "border-dashed" : ""}`}
+              style={{ borderColor: townColor(i) }}
+            />
             {territoryLabel(territory)}
             <span className="text-ink-muted">· panel de {panels[territory]} station{panels[territory] > 1 ? "s" : ""}</span>
           </li>
         ))}
       </ul>
+      {small.length ? (
+        <p className="text-xs text-ink-muted">
+          En pointillés : panel de moins de {MIN_PANEL} stations ({small.map(territoryLabel).join(", ")}), où une seule station fait la
+          courbe ; à lire avec prudence.
+        </p>
+      ) : null}
       <div
         role="img"
         aria-label={`Moyenne par station du nombre de ${detail}, de ${rows[0]?.year} à ${rows.at(-1)?.year}, ${names.map(territoryLabel).join(" et ")}.`}
@@ -233,6 +246,7 @@ function ExtremesChart({ data }: { data: Climate }) {
                 name={territoryLabel(territory)}
                 stroke={townColor(i)}
                 strokeWidth={2}
+                strokeDasharray={small.includes(territory) ? "4 3" : undefined}
                 dot={false}
                 activeDot={{ r: 4, stroke: "var(--surface)", strokeWidth: 2 }}
                 isAnimationActive={false}

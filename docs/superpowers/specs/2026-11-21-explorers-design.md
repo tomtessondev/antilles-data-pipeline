@@ -73,7 +73,8 @@ static PNGs only (not interactive).
   but is no longer needed by the site, which leaves it out of the page.
 - Climate explorer: heat map year × month of the territory Tx anomaly (territory
   selector, rain toggle); MapLibre map of stations coloured by the selected year's
-  anomaly (year slider) with records in the popup; extremes chart with panel size.
+  anomaly (year slider) with records in the popup; extremes chart with panel size (panels
+  under 3 stations drawn dashed, with a note to read them with care).
 - Client components only for the explorers; no polling; offline/fallback text if the
   file cannot be read. French UI, site tokens, light and dark.
 - Hard-coded figures in the page text that the data contradicts get updated.
