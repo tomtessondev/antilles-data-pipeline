@@ -70,6 +70,8 @@ export type PassageWeather = z.infer<typeof passageWeatherSchema>;
 export type DecadeCount = z.infer<typeof decadeSchema>;
 export type Track = z.infer<typeof trackSchema>;
 export type Hurricanes = z.infer<typeof hurricanesSchema>;
+/** What the explorer needs: everything but `by_decade`, which the decade chart no longer reads. */
+export type ExplorerHurricanes = Omit<Hurricanes, "by_decade">;
 
 /** The warehouse export, or the bundled sample when it cannot be read. */
 export async function getHurricanes(): Promise<Published<Hurricanes>> {

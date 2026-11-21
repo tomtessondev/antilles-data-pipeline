@@ -68,7 +68,9 @@ static PNGs only (not interactive).
 - Hurricane explorer (section "Résultats"): MapLibre map of tracks (GeoJSON line layer,
   segments coloured by wind / category), filters season range, island, minimum
   category; selecting a storm shows its passages and the J−1..J+1 rain/wind of
-  `passage_weather`; decade chart from `by_decade`.
+  `passage_weather`; decade chart counted from `passages` (season, island, category), so it
+  follows the season range to the year. `by_decade` stays in the contract for other readers
+  but is no longer needed by the site, which leaves it out of the page.
 - Climate explorer: heat map year × month of the territory Tx anomaly (territory
   selector, rain toggle); MapLibre map of stations coloured by the selected year's
   anomaly (year slider) with records in the popup; extremes chart with panel size.

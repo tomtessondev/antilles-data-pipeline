@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Tooltip, type TooltipContentProps, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
-import type { Hurricanes, Passage, PassageWeather } from "@/lib/hurricanes";
+import type { ExplorerHurricanes, Passage, PassageWeather } from "@/lib/hurricanes";
 import {
   CATEGORY_LABELS,
   categoryColor,
@@ -161,14 +161,14 @@ function strongest(storms: Storm[]): Storm | undefined {
   );
 }
 
-export function HurricaneExplorer({ data, sample }: { data: Hurricanes; sample: boolean }) {
+export function HurricaneExplorer({ data, sample }: { data: ExplorerHurricanes; sample: boolean }) {
   const [first, last] = seasonRange(data);
   const [filters, setFilters] = useState<StormFilters>({ from: Math.max(first, 1950), to: last, island: null, minCategory: 2 });
   const [picked, setPicked] = useState<string | null>(null);
 
   const storms = useMemo(() => filterStorms(data.passages, filters), [data.passages, filters]);
   const sids = useMemo(() => new Set(storms.map((storm) => storm.sid)), [storms]);
-  const decades = useMemo(() => decadeRows(data.by_decade, filters), [data.by_decade, filters]);
+  const decades = useMemo(() => decadeRows(data.passages, filters), [data.passages, filters]);
   const selected = storms.find((storm) => storm.sid === picked) ?? strongest(storms);
   const seasons = Array.from({ length: last - first + 1 }, (_, i) => last - i);
   const islands = data.islands.map((island) => island.island);

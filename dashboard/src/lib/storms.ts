@@ -1,7 +1,7 @@
 import type { Feature, FeatureCollection, LineString } from "geojson";
 
 import { rampColor } from "./colors";
-import type { Category, DecadeCount, Hurricanes, Passage, PassageWeather, Track } from "./hurricanes";
+import type { Category, ExplorerHurricanes, Passage, PassageWeather, Track } from "./hurricanes";
 
 /* Pure helpers of the hurricane explorer: no React, no MapLibre, safe in client bundles. */
 
@@ -146,23 +146,25 @@ export type DecadeRow = { decade: number; label: string; total: number } & Parti
 
 export const DECADE_CATEGORIES = ["Unknown", ...CATEGORIES] as const;
 
-/** Passages per decade, stacked by category, for the selected island (all islands when null). */
-export function decadeRows(counts: DecadeCount[], filters: StormFilters): DecadeRow[] {
+/** Passages per decade, stacked by category, with the map's season range and island. */
+export function decadeRows(passages: Passage[], filters: StormFilters): DecadeRow[] {
   const rows = new Map<number, DecadeRow>();
-  for (const count of counts) {
-    if (filters.island && count.island !== filters.island) continue;
-    if (count.decade + 9 < filters.from || count.decade > filters.to) continue;
-    if (categoryRank(count.category) < filters.minCategory) continue;
-    const row = rows.get(count.decade) ?? { decade: count.decade, label: `${count.decade}`, total: 0 };
-    row[count.category] = (row[count.category] ?? 0) + count.passages;
-    row.total += count.passages;
-    rows.set(count.decade, row);
+  for (const passage of passages) {
+    if (passage.season < filters.from || passage.season > filters.to) continue;
+    if (filters.island && passage.island !== filters.island) continue;
+    if (categoryRank(passage.category) < filters.minCategory) continue;
+    const decade = Math.floor(passage.season / 10) * 10;
+    const category = passage.category ?? "Unknown";
+    const row = rows.get(decade) ?? { decade, label: `${decade}`, total: 0 };
+    row[category] = (row[category] ?? 0) + 1;
+    row.total += 1;
+    rows.set(decade, row);
   }
   return [...rows.values()].sort((a, b) => a.decade - b.decade);
 }
 
 /** First and last season of the passages. */
-export function seasonRange(data: Hurricanes): [number, number] {
+export function seasonRange(data: ExplorerHurricanes): [number, number] {
   const seasons = data.passages.map((passage) => passage.season);
   return seasons.length ? [Math.min(...seasons), Math.max(...seasons)] : [1851, new Date().getUTCFullYear()];
 }

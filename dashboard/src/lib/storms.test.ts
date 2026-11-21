@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { DecadeCount, Passage, PassageWeather, Track } from "./hurricanes";
+import type { Passage, PassageWeather, Track } from "./hurricanes";
 import {
   categoryColor,
   categoryFromWind,
@@ -123,27 +123,21 @@ describe("passageDays", () => {
 });
 
 describe("decadeRows", () => {
-  const counts: DecadeCount[] = [
-    { island: "Guadeloupe", decade: 2010, category: "Cat 5", passages: 1 },
-    { island: "Dominica", decade: 2010, category: "Cat 5", passages: 2 },
-    { island: "Guadeloupe", decade: 2010, category: "Tropical storm", passages: 3 },
-    { island: "Guadeloupe", decade: 1980, category: "Cat 4", passages: 1 },
-    { island: "Martinique", decade: 1890, category: "Unknown", passages: 1 },
-  ];
-
-  it("stacks the categories per decade, oldest first", () => {
-    expect(decadeRows(counts, ALL)).toEqual([
+  it("counts the passages per decade, stacked by category, oldest first", () => {
+    expect(decadeRows(passages, ALL)).toEqual([
       { decade: 1890, label: "1890", total: 1, Unknown: 1 },
       { decade: 1980, label: "1980", total: 1, "Cat 4": 1 },
-      { decade: 2010, label: "2010", total: 6, "Cat 5": 3, "Tropical storm": 3 },
+      { decade: 2010, label: "2010", total: 3, "Cat 5": 1, "Cat 3": 1, "Tropical storm": 1 },
     ]);
   });
 
-  it("applies the island, the minimum category and the season range (overlapping decades kept)", () => {
-    const rows = decadeRows(counts, { from: 1985, to: 2026, island: "Guadeloupe", minCategory: 2 });
-    expect(rows).toEqual([
+  it("follows the season range exactly, not whole decades", () => {
+    expect(decadeRows(passages, { ...ALL, from: 2016 })).toEqual([{ decade: 2010, label: "2010", total: 2, "Cat 5": 1, "Cat 3": 1 }]);
+  });
+
+  it("applies the island and the minimum category", () => {
+    expect(decadeRows(passages, { ...ALL, island: "Guadeloupe", minCategory: 2 })).toEqual([
       { decade: 1980, label: "1980", total: 1, "Cat 4": 1 },
-      { decade: 2010, label: "2010", total: 1, "Cat 5": 1 },
     ]);
   });
 });
