@@ -32,6 +32,18 @@ describe("fetchPublished", () => {
     expect((await fetchPublished("https://example.test/x.json", schema, sample)).sample).toBe(true);
   });
 
+  it("falls back to the sample when the document announces more than 2 MB", async () => {
+    const response = Response.json({ generated_at: "2026-11-21T06:00:00Z", value: 2 }, { headers: { "content-length": "2000001" } });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response));
+    expect((await fetchPublished("https://example.test/x.json", schema, sample)).sample).toBe(true);
+  });
+
+  it("falls back to the sample when the body is over 2 MB", async () => {
+    const response = new Response(JSON.stringify({ generated_at: "2026-11-21T06:00:00Z", value: 2, padding: "x".repeat(2_000_000) }));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response));
+    expect((await fetchPublished("https://example.test/x.json", schema, sample)).sample).toBe(true);
+  });
+
   it("falls back to the sample when the body is not JSON", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("<html>")));
     expect((await fetchPublished("https://example.test/x.json", schema, sample)).sample).toBe(true);
