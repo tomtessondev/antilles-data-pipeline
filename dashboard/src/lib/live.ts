@@ -32,7 +32,10 @@ export const stationSchema = z.object({
   humidity_pct: z.number().nullable(),
   pressure_hpa: z.number().nullable(),
   pm10_ugm3: z.number().nullable(),
+  // Optional until the endpoint that sends them is deployed: the map reads both shapes.
+  pm2_5_ugm3: z.number().nullable().optional(),
   status: z.string(),
+  source: z.enum(["meteofrance", "airquality", "simulated"]).optional(),
 });
 
 export const stationsSchema = z.object({
@@ -83,5 +86,69 @@ export function latestTimestamp(timestamps: (string | null)[]): Date | null {
 
 export function ageLabel(time: Date, now: Date): string {
   const minutes = Math.floor((now.getTime() - time.getTime()) / 60_000);
-  return minutes < 1 ? "il y a moins d’une minute" : `il y a ${minutes} min`;
+  if (minutes < 1) return "il y a moins d’une minute";
+  if (minutes < 60) return `il y a ${minutes} min`;
+  const rest = minutes % 60;
+  return `il y a ${Math.floor(minutes / 60)} h${rest ? ` ${rest} min` : ""}`;
+}
+
+/** The official hourly particle stations (Gwad'Air, Madininair); the others measure the weather. */
+export function isParticleStation(station: Station): boolean {
+  return station.source === "airquality";
+}
+
+/**
+ * PM10 bands, in µg/m³, from the WHO 2021 guidelines (15 annual, 45 daily) and the EU daily
+ * limit value (50). These are daily references, shown against an hourly mean as a guide.
+ */
+export const PM10_BANDS = [
+  { max: 15, label: "0–15" },
+  { max: 45, label: "15–45" },
+  { max: 50, label: "45–50" },
+  { max: Infinity, label: "> 50" },
+] as const;
+
+export function pm10Band(ugm3: number | null): number | null {
+  if (ugm3 === null) return null;
+  return PM10_BANDS.findIndex((band) => ugm3 <= band.max);
+}
+
+export function pm10BandColor(band: number): string {
+  return rampColor("orange", (band + 1) / PM10_BANDS.length);
+}
+
+export function pm10Color(ugm3: number | null): string {
+  const band = pm10Band(ugm3);
+  return band === null ? "var(--baseline)" : pm10BandColor(band);
+}
+
+const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
+
+export function stationCountLabel(stations: Station[]): string {
+  const particles = stations.filter(isParticleStation).length;
+  const weather = stations.length - particles;
+  const parts = [];
+  if (weather) parts.push(plural(weather, "station météo", "stations météo"));
+  if (particles) parts.push(plural(particles, "station de particules", "stations de particules"));
+  return parts.length ? parts.join(" · ") : "aucune station";
+}
+
+const number = (value: number, digits = 1) => value.toLocaleString("fr-FR", { maximumFractionDigits: digits });
+
+/** One line describing the station's latest reading, for its marker's title and popup. */
+export function stationDetails(station: Station, now: Date): string {
+  const details = [station.name];
+  if (isParticleStation(station)) {
+    if (station.pm10_ugm3 !== null) details.push(`PM10 ${number(station.pm10_ugm3, 0)} µg/m³`);
+    if (station.pm2_5_ugm3 != null) details.push(`PM2.5 ${number(station.pm2_5_ugm3, 0)} µg/m³`);
+    details.push("moyenne horaire brute, non validée");
+    if (station.ts !== null) details.push(ageLabel(new Date(station.ts), now));
+  } else {
+    if (station.temperature_c !== null) details.push(`${number(station.temperature_c)} °C`);
+    if (station.humidity_pct !== null) details.push(`humidité ${number(station.humidity_pct, 0)} %`);
+    if (station.pressure_hpa !== null) details.push(`${number(station.pressure_hpa)} hPa`);
+    if (station.pm10_ugm3 !== null) details.push(`PM10 ${number(station.pm10_ugm3, 0)} µg/m³`);
+  }
+  if (station.status !== "online") details.push("hors ligne");
+  return details.join(" · ");
 }

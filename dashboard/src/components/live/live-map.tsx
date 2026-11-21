@@ -13,7 +13,8 @@ import { LiveOffline } from "./offline";
 
 export type LivePoint = { id: string; lon: number; lat: number; title: string } & (
   | { kind: "ship"; rotation: number | null }
-  | { kind: "station"; color: string }
+  // `outline`: a station of another kind, drawn small and neutral; `dim`: set back behind the others.
+  | { kind: "station"; color: string; emphasis?: "outline" | "dim" }
   // A diverging colour whose neutral middle is the surface colour: outlined in ink to stay visible.
   | { kind: "anomaly"; color: string }
 );
@@ -23,6 +24,12 @@ const ARROW =
 
 function look(point: LivePoint): { className: string; background: string; arrow: boolean } {
   if (point.kind === "station") {
+    if (point.emphasis === "outline") {
+      return { className: "size-2.5 rounded-full border-2 border-ink-secondary", background: "var(--surface)", arrow: false };
+    }
+    if (point.emphasis === "dim") {
+      return { className: "size-2.5 rounded-full border border-surface opacity-50", background: "var(--baseline)", arrow: false };
+    }
     return { className: "size-3.5 rounded-full border-2 border-surface shadow-sm", background: point.color, arrow: false };
   }
   if (point.kind === "anomaly") {
@@ -41,6 +48,8 @@ function look(point: LivePoint): { className: string; background: string; arrow:
 function paint(element: HTMLElement, point: LivePoint) {
   element.title = point.title;
   element.setAttribute("aria-label", point.title);
+  // Set-back stations stay under the highlighted ones where markers overlap.
+  element.style.zIndex = point.kind === "station" && point.emphasis ? "0" : "1";
   const shape =
     element.firstElementChild instanceof HTMLElement
       ? element.firstElementChild
@@ -127,11 +136,26 @@ type Props<T> = {
   latest: (data: T) => Date | null;
   /** What the map shows, e.g. "42 navires". */
   count: (data: T) => string;
-  legend: ReactNode;
+  legend: ReactNode | ((data: T | null) => ReactNode);
+  /** Shown above the map once data has arrived, e.g. a choice of measure. */
+  controls?: (data: T) => ReactNode;
+  /** Shown under the caption once data has arrived, e.g. a source attribution. */
+  footnote?: (data: T) => ReactNode;
 };
 
 /** A polled live endpoint drawn on the map, with its freshness and an offline state. */
-export function LiveMap<T>({ url, schema, intervalMs, label, toPoints, latest, count, legend }: Props<T>) {
+export function LiveMap<T>({
+  url,
+  schema,
+  intervalMs,
+  label,
+  toPoints,
+  latest,
+  count,
+  legend,
+  controls,
+  footnote,
+}: Props<T>) {
   const { data, lastOk, failed, now } = useLive(url, schema, intervalMs);
   const points = useMemo(() => (data ? toPoints(data) : []), [data, toPoints]);
 
@@ -144,6 +168,7 @@ export function LiveMap<T>({ url, schema, intervalMs, label, toPoints, latest, c
 
   return (
     <figure className="flex flex-col gap-3">
+      {data && controls ? controls(data) : null}
       <div
         role="region"
         aria-label={label}
@@ -158,8 +183,9 @@ export function LiveMap<T>({ url, schema, intervalMs, label, toPoints, latest, c
       </div>
       <figcaption className="flex flex-col gap-2 text-sm text-ink-secondary sm:flex-row sm:items-center sm:justify-between">
         <span aria-live="polite">{status}</span>
-        {legend}
+        {typeof legend === "function" ? legend(data) : legend}
       </figcaption>
+      {data && footnote ? footnote(data) : null}
     </figure>
   );
 }
