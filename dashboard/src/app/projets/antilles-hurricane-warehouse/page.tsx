@@ -5,7 +5,7 @@ import { ProjectLayout } from "@/components/project/project-layout";
 import { Code, Lesson, P, Recipe, Section, Steps, Table } from "@/components/project/prose";
 
 import { WarehouseArchitecture } from "./_components/architecture";
-import perDecade from "./_images/hurricanes_per_decade.png";
+import { HurricaneResults } from "./_components/hurricane-results";
 import perIsland from "./_images/hurricanes_per_island.png";
 
 export const metadata: Metadata = {
@@ -65,13 +65,19 @@ export default function HurricaneWarehouseProjectPage() {
       </Section>
 
       <Section id="resultats" title="Ce que montrent les données">
-        <Image src={perDecade} alt="Nombre d’ouragans passés à moins de 100 km d’une des six îles par décennie, de 1850 à 2020, par catégorie de 1 à 5" className={IMAGE} />
         <P>
           Un passage, c’est une tempête dont la trajectoire est venue à moins de 100 km du point
           d’une île ; sa catégorie est celle de son vent le plus fort dans ce rayon. Les années
           2010 comptent deux ouragans de catégorie 5 : Irma à Saint-Martin et Saint-Barthélemy,
           Maria à la Dominique, en septembre 2017.
         </P>
+        <P>
+          L’explorateur ci-dessous lit l’export que le build quotidien publie depuis les marts :
+          les trajectoires des tempêtes passées près des îles, leurs passages, la météo des îles
+          autour de chaque passage et le décompte par décennie. Choisissez une période, une île,
+          une catégorie minimale, puis une tempête.
+        </P>
+        <HurricaneResults />
         <Image src={perIsland} alt="Nombre d’ouragans passés à moins de 100 km de chaque île depuis 1950, par catégorie : Saint-Martin 14, Saint-Barthélemy 13, Guadeloupe 12, Dominique 8, Martinique 7, Sainte-Lucie 6" className={IMAGE} />
         <P>
           Depuis 1950, les îles du nord sont les plus exposées : 14 ouragans à Saint-Martin,

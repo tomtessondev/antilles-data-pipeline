@@ -208,7 +208,7 @@ export const PROJECTS: readonly Project[] = [
     problem:
       "la copie publique des trajectoires d’ouragans s’arrête en 2023, et la météo des îles n’y est pas.",
     result:
-      "508 passages de tempêtes recensés près des six îles, mis à jour chaque jour pour moins de 1 % du quota gratuit.",
+      "510 passages de tempêtes recensés près des six îles, mis à jour chaque jour pour moins de 1 % du quota gratuit.",
     stack: ["BigQuery", "dbt", "Python", "Terraform", "GitHub Actions"],
     skills: {
       ingestion: "Fichier NOAA, API ERA5",
