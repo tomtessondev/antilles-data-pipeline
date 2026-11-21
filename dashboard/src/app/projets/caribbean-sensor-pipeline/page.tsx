@@ -102,8 +102,23 @@ export default function SensorProjectPage() {
           3 heures en arrière.
         </P>
         <P>
-          La carte affiche la dernière mesure de chaque station, colorée selon la température, et se met
-          à jour toutes les minutes. Cliquez ou appuyez sur une station pour voir ses valeurs.
+          Une seconde source réelle porte la partie « qualité de l’air » du projet : les{" "}
+          <strong className="text-ink">stations officielles de mesure des particules</strong> de Gwad’Air
+          (Guadeloupe, Saint-Martin) et de Madininair (Martinique), douze stations qui publient chaque
+          heure leurs PM10 et, pour la plupart, leurs PM2.5. Le même pont lit les fichiers temps réel du
+          LCSQA / INERIS sur data.gouv.fr, convertit l’heure locale en UTC et publie une lecture par
+          station et par heure, avec le même contrat de message. Ces moyennes horaires arrivent avec
+          environ 2 h 30 de retard au pire, et ce sont des valeurs brutes, pas encore validées par les
+          réseaux : le contrôle qualité du pipeline s’applique à elles comme aux autres. Le déploiement
+          en ligne lance les deux sources réelles à la fois avec <Code>STATION_SOURCE=real</Code>{" "}
+          (Météo-France et particules) ; <Code>meteofrance</Code> et <Code>simulated</Code> restent
+          disponibles seuls.
+        </P>
+        <P>
+          La carte affiche la dernière mesure de chaque station et se met à jour toutes les minutes. Un
+          sélecteur choisit la mesure : la température colore les stations météo, les PM10 colorent les
+          stations de particules selon les repères de l’OMS et de l’Union européenne. Cliquez ou appuyez
+          sur une station pour voir ses valeurs.
         </P>
         <StationsMap baseUrl={process.env.NEXT_PUBLIC_SENSORS_LIVE_URL} />
       </Section>
@@ -186,8 +201,9 @@ export default function SensorProjectPage() {
               body: (
                 <>
                   Dans les cinq minutes, le job <Code>flag_readings</Code> examine les lectures
-                  reçues : si ce PM10 est trois fois plus élevé que ses trente voisines, il est marqué{" "}
-                  <Code>pm_spike</Code>. La ligne brute reste intacte ; la vue{" "}
+                  reçues dans les 12 dernières heures. Un pic n’est jugé qu’une fois arrivées au moins
+                  trois lectures suivantes : si ce PM10 est alors trois fois plus élevé que ses trente
+                  voisines, il est marqué <Code>pm_spike</Code>. La ligne brute reste intacte ; la vue{" "}
                   <Code>telemetry_clean</Code> masque seulement la valeur suspecte.
                 </>
               ),
@@ -339,6 +355,15 @@ export default function SensorProjectPage() {
           <Lesson title="Un pic se juge par rapport à ses voisines">
             Un panache de poussière monte sur des heures : ses voisines montent avec lui, il n’est
             pas marqué. Un parasite électrique isolé, si.
+          </Lesson>
+          <Lesson title="Une règle écrite pour 10 secondes, appliquée à des mesures horaires">
+            Avec une lecture toutes les dix secondes, chaque valeur avait ses voisines suivantes en
+            quelques instants. Une lecture horaire arrive seule : le début d’un panache (15, 15, 15,
+            puis 50) n’était comparé qu’au passé et marqué comme pic, définitivement, puisqu’un drapeau
+            n’est jamais retiré. La règle <Code>pm_spike</Code> attend désormais trois lectures
+            suivantes et le job regarde 12 heures en arrière, assez pour juger une mesure horaire
+            quand ses heures suivantes arrivent. Les règles qui comptent des lectures (30 valeurs
+            identiques d’affilée) restent inactives à ce rythme, et c’est documenté.
           </Lesson>
           <Lesson title="ON CONFLICT et les droits PostgreSQL">
             Nommer la clé dans <Code>ON CONFLICT (station_id, ts)</Code> exige le droit de lecture, et
