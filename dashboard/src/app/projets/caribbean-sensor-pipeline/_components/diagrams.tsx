@@ -141,11 +141,11 @@ export function QualityDiagram() {
       <Node x={10} y={80} w={170} h={100} label="telemetry" sub="données brutes" sub2="jamais modifiées" tone="store" />
       <ListNode
         x={225}
-        y={40}
+        y={30}
         w={210}
-        h={180}
+        h={200}
         label="flag_readings()"
-        lines={["job TimescaleDB, 5 min", "lectures reçues récemment", "pm_stuck : 30 valeurs", "identiques d'affilée", "pm_spike : > 3 × voisines", "implausible_weather"]}
+        lines={["job TimescaleDB, 5 min", "reçues depuis 12 h", "pm_stuck : 30 valeurs", "identiques d'affilée", "pm_spike : > 3 × voisines,", "après 3 lectures suivantes", "implausible_weather"]}
         tone="process"
       />
       <Node x={480} y={80} w={160} h={100} label="reading_flags" sub="une ligne par" sub2="lecture et règle" tone="store" />

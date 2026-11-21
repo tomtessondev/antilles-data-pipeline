@@ -104,11 +104,11 @@ export const PROJECTS: readonly Project[] = [
     color: "--family-iot",
     title: "Des capteurs de qualité de l’air jusqu’à Grafana",
     pitch:
-      "Des stations de mesure (simulées, et un firmware ESP32) publient la qualité de l’air en MQTT ; un service les valide et les stocke dans TimescaleDB ; Grafana affiche, contrôle et alerte.",
+      "Des stations de mesure (réelles : météo et particules officielles ; simulées ; un firmware ESP32) publient en MQTT ; un service les valide et les stocke dans TimescaleDB ; Grafana affiche, contrôle et alerte.",
     clientValue:
       "du capteur au tableau de bord : messages sécurisés, aucune donnée perdue ni dupliquée, contrôle qualité automatique.",
     flow: {
-      source: "Stations ESP32 et simulées, en MQTT chiffré",
+      source: "Stations Météo-France, particules Gwad’Air et Madininair, ESP32, en MQTT chiffré",
       process: "Validation → TimescaleDB, règles de qualité",
       result: "Tableaux et alertes Grafana",
     },
