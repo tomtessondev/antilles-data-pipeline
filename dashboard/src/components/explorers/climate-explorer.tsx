@@ -1,18 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type KeyboardEvent, useMemo, useRef, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, type TooltipContentProps, XAxis, YAxis } from "recharts";
 
 import { type LivePoint, MapCanvas } from "@/components/live/live-map";
 import { Segmented } from "@/components/segmented";
 import {
   anomalyColor,
+  cellLabel,
   extremeRows,
   formatAnomaly,
   heatMapCells,
   INDICATORS,
   LIMITS,
   MIN_PANEL,
+  MONTHS,
+  moveInGrid,
   recordLines,
   smallPanels,
   stationAnomalies,
@@ -20,13 +23,13 @@ import {
   territoryLabel,
   type Variable,
   warmestYear,
+  yearlyMeans,
 } from "@/lib/anomalies";
 import type { Climate } from "@/lib/climate";
 import { townColor } from "@/lib/colors";
 
 import { AXIS_TICK, Field, Generated, Panel, SELECT } from "./frame";
 
-const MONTHS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
 const MONTH_INITIALS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 
 const VARIABLES: { value: Variable; label: string }[] = [
@@ -52,55 +55,117 @@ function ScaleLegend({ variable }: { variable: Variable }) {
   );
 }
 
+const HATCH = "repeating-linear-gradient(45deg, var(--grid) 0 2px, transparent 2px 4px)";
+
+/**
+ * The year × month grid. A tap, a click or the arrow keys (roving tabindex) select a cell,
+ * whose value is read on the line below; hovering reads a cell without selecting it.
+ */
 function HeatMap({ data, territory, variable }: { data: Climate; territory: string; variable: Variable }) {
   const { years, cells } = useMemo(() => heatMapCells(data.territory_anomalies, territory, variable), [data, territory, variable]);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const grid = useRef<HTMLDivElement>(null);
   const warmest = variable === "tx" ? warmestYear(cells, new Date(data.generated_at).getUTCFullYear()) : null;
   const unit = variable === "tx" ? "de la température maximale" : "du cumul de pluie";
   const summary =
     `Écart mensuel ${unit} à la normale ${data.normal_period}, ${territoryLabel(territory)}, de ${years[0]} à ${years.at(-1)}.` +
     (warmest ? ` Année la plus chaude : ${warmest.year}, ${formatAnomaly(warmest.mean, "tx")} en moyenne.` : "");
+  // The cell reached with Tab: the selected one, else the last measured month.
+  const focusable = selected ?? Math.max(cells.findLastIndex((cell) => cell.value !== null), 0);
+  const shown = hovered ?? selected;
+
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>, index: number) => {
+    const next = moveInGrid(index, event.key, years.length);
+    if (next === null) return;
+    event.preventDefault();
+    // The keyboard takes over from a pointer left on the grid.
+    setHovered(null);
+    setSelected(next);
+    grid.current?.querySelector<HTMLElement>(`[data-cell="${next}"]`)?.focus();
+  };
 
   if (!years.length) return <p className="text-sm text-ink-muted">Pas de données pour ce territoire.</p>;
   return (
     <div className="space-y-2">
       <p className="sr-only">{summary}</p>
-      <div className="overflow-x-auto pb-1" aria-hidden="true">
+      <div className="overflow-x-auto pb-1">
         <div
+          ref={grid}
+          role="grid"
+          aria-label={`Écart mensuel ${unit} à la normale, ${territoryLabel(territory)} : une colonne par année, une ligne par mois`}
+          onMouseLeave={() => setHovered(null)}
           className="grid min-w-[560px] gap-px"
           style={{ gridTemplateColumns: `1.5rem repeat(${years.length}, minmax(0, 1fr))` }}
         >
           {MONTH_INITIALS.map((initial, m) => (
-            <div key={m} className="contents">
-              <span className="pr-1 text-right text-[10px] leading-3 text-ink-muted">{initial}</span>
+            <div key={m} role="row" className="contents">
+              <span role="rowheader" aria-label={MONTHS[m]} className="pr-1 text-right text-[10px] leading-3 text-ink-muted">
+                {initial}
+              </span>
               {years.map((year, y) => {
-                const cell = cells[y * 12 + m];
+                const index = y * 12 + m;
+                const cell = cells[index];
                 return (
                   <span
                     key={year}
-                    title={`${MONTHS[m]} ${year} : ${formatAnomaly(cell.value, variable)}`}
-                    className="h-3 rounded-[1px]"
-                    style={
-                      cell.value === null
-                        ? { background: "repeating-linear-gradient(45deg, var(--grid) 0 2px, transparent 2px 4px)" }
-                        : { background: anomalyColor(cell.value, variable) }
-                    }
+                    role="gridcell"
+                    data-cell={index}
+                    tabIndex={index === focusable ? 0 : -1}
+                    aria-selected={index === selected}
+                    aria-label={cellLabel(cell, variable)}
+                    onClick={() => setSelected(index)}
+                    onMouseEnter={() => setHovered(index)}
+                    onKeyDown={(event) => onKeyDown(event, index)}
+                    className={`h-3 cursor-pointer rounded-[1px] focus-visible:outline-2 focus-visible:outline-accent ${
+                      index === selected ? "outline-2 outline-ink" : ""
+                    }`}
+                    style={{ background: cell.value === null ? HATCH : anomalyColor(cell.value, variable) }}
                   />
                 );
               })}
             </div>
           ))}
-          <span />
-          {years.map((year) => (
-            <span key={year} className="relative h-4 text-[10px] text-ink-muted">
-              {year % 10 === 0 ? <span className="absolute left-0 top-0.5">{year}</span> : null}
-            </span>
-          ))}
+          <div aria-hidden="true" className="contents">
+            <span />
+            {years.map((year) => (
+              <span key={year} className="relative h-4 text-[10px] text-ink-muted">
+                {year % 10 === 0 ? <span className="absolute left-0 top-0.5">{year}</span> : null}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
+      <p aria-live="polite" className="min-h-5 text-sm text-ink-secondary">
+        {shown === null ? (
+          <span className="text-ink-muted">Touchez ou survolez une case pour lire sa valeur ; au clavier, les flèches parcourent la grille.</span>
+        ) : (
+          <span className="font-medium text-ink tabular-nums">{cellLabel(cells[shown], variable)}</span>
+        )}
+      </p>
+      <table className="sr-only">
+        <caption>Écart moyen {unit} par année, sur les mois mesurés</caption>
+        <thead>
+          <tr>
+            <th scope="col">Année</th>
+            <th scope="col">Écart moyen</th>
+            <th scope="col">Mois mesurés</th>
+          </tr>
+        </thead>
+        <tbody>
+          {yearlyMeans(cells).map(({ year, mean, months }) => (
+            <tr key={year}>
+              <th scope="row">{year}</th>
+              <td>{formatAnomaly(mean, variable)}</td>
+              <td>{months}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
       <div className="flex flex-wrap items-center gap-4">
         <ScaleLegend variable={variable} />
         <span className="flex items-center gap-1.5 text-xs text-ink-muted">
-          <span aria-hidden="true" className="size-3 rounded-[1px]" style={{ background: "repeating-linear-gradient(45deg, var(--grid) 0 2px, transparent 2px 4px)" }} />
+          <span aria-hidden="true" className="size-3 rounded-[1px]" style={{ background: HATCH }} />
           mois incomplet
         </span>
       </div>
@@ -268,7 +333,7 @@ export function ClimateExplorer({ data, sample }: { data: Climate; sample: boole
     <div className="space-y-4">
       <Panel
         title="Mois par mois, l’écart à la normale"
-        subtitle={`Moyenne des stations du territoire, chacune comparée à sa normale ${data.normal_period} du même mois. Survolez une case pour sa valeur.`}
+        subtitle={`Moyenne des stations du territoire, chacune comparée à sa normale ${data.normal_period} du même mois.`}
       >
         <div className="flex flex-wrap items-end gap-3">
           <Field label="Territoire">
@@ -282,7 +347,7 @@ export function ClimateExplorer({ data, sample }: { data: Climate; sample: boole
           </Field>
           <Segmented label="Mesure" options={VARIABLES} value={variable} onChange={setVariable} />
         </div>
-        <HeatMap data={data} territory={territory} variable={variable} />
+        <HeatMap key={territory} data={data} territory={territory} variable={variable} />
       </Panel>
       <Panel title="Les stations, année par année" subtitle="Écart annuel de la température maximale de chaque station à sa normale (au moins 10 mois complets).">
         <StationMap data={data} />

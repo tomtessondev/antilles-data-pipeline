@@ -2,14 +2,17 @@ import { describe, expect, it } from "vitest";
 
 import {
   anomalyColor,
+  cellLabel,
   extremeRows,
-  smallPanels,
   formatAnomaly,
   heatMapCells,
+  moveInGrid,
   recordLines,
+  smallPanels,
   stationAnomalies,
   territories,
   warmestYear,
+  yearlyMeans,
 } from "./anomalies";
 import type { TerritoryAnomaly } from "./climate";
 
@@ -123,5 +126,37 @@ describe("recordLines", () => {
 describe("smallPanels", () => {
   it("lists the territories whose panel has fewer than 3 stations", () => {
     expect(smallPanels({ Guadeloupe: 5, Martinique: 3, "Saint-Martin": 1, "Saint-Barthelemy": 2 })).toEqual(["Saint-Martin", "Saint-Barthelemy"]);
+  });
+});
+
+describe("heat map reading", () => {
+  it("names a cell's month and value", () => {
+    expect(cellLabel({ year: 2024, month: 9, value: 1.26 }, "tx")).toBe("sept. 2024 : +1,3 °C");
+    expect(cellLabel({ year: 2024, month: 2, value: -42.4 }, "rr")).toBe("févr. 2024 : -42 mm");
+    expect(cellLabel({ year: 2024, month: 12, value: null }, "tx")).toBe("déc. 2024 : pas de valeur");
+  });
+
+  it("moves through the grid like it is drawn: years across, months down, clamped at the edges", () => {
+    // Three years: cell index = year index × 12 + month index.
+    const march2023 = 12 + 2;
+    expect(moveInGrid(march2023, "ArrowRight", 3)).toBe(24 + 2);
+    expect(moveInGrid(march2023, "ArrowLeft", 3)).toBe(2);
+    expect(moveInGrid(march2023, "ArrowDown", 3)).toBe(12 + 3);
+    expect(moveInGrid(march2023, "ArrowUp", 3)).toBe(12 + 1);
+    expect(moveInGrid(march2023, "Home", 3)).toBe(2);
+    expect(moveInGrid(march2023, "End", 3)).toBe(24 + 2);
+    expect(moveInGrid(24 + 2, "ArrowRight", 3)).toBe(24 + 2);
+    expect(moveInGrid(0, "ArrowUp", 3)).toBe(0);
+    expect(moveInGrid(11, "ArrowDown", 3)).toBe(11);
+    expect(moveInGrid(0, "Enter", 3)).toBeNull();
+  });
+
+  it("averages each year's measured months", () => {
+    const { cells } = heatMapCells([anomaly(2022, 1, 1), anomaly(2022, 2, 2), anomaly(2024, 5, -0.5)], "Martinique", "tx");
+    expect(yearlyMeans(cells)).toEqual([
+      { year: 2022, mean: 1.5, months: 2 },
+      { year: 2023, mean: null, months: 0 },
+      { year: 2024, mean: -0.5, months: 1 },
+    ]);
   });
 });

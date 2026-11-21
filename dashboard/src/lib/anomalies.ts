@@ -62,6 +62,54 @@ export function heatMapCells(rows: TerritoryAnomaly[], territory: string, variab
   return { years, cells };
 }
 
+export const MONTHS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+
+/** "sept. 2024 : +1,3 °C", the reading of one cell. */
+export function cellLabel(cell: HeatCell, variable: Variable): string {
+  return `${MONTHS[cell.month - 1]} ${cell.year} : ${formatAnomaly(cell.value, variable)}`;
+}
+
+/**
+ * The cell an arrow key leads to, as the grid is drawn: one column per year (index
+ * `year × 12 + month`), one row per month; Home and End jump to the first and last year.
+ * Clamped at the edges; null for any other key.
+ */
+export function moveInGrid(index: number, key: string, yearCount: number): number | null {
+  const [column, row] = [Math.floor(index / 12), index % 12];
+  const clamp = (value: number, max: number) => Math.min(Math.max(value, 0), max);
+  switch (key) {
+    case "ArrowRight":
+      return clamp(column + 1, yearCount - 1) * 12 + row;
+    case "ArrowLeft":
+      return clamp(column - 1, yearCount - 1) * 12 + row;
+    case "ArrowDown":
+      return column * 12 + clamp(row + 1, 11);
+    case "ArrowUp":
+      return column * 12 + clamp(row - 1, 11);
+    case "Home":
+      return row;
+    case "End":
+      return (yearCount - 1) * 12 + row;
+    default:
+      return null;
+  }
+}
+
+/** Each year's mean over its measured months, for the text alternative of the grid. */
+export function yearlyMeans(cells: HeatCell[]): { year: number; mean: number | null; months: number }[] {
+  const byYear = new Map<number, number[]>();
+  for (const cell of cells) {
+    const values = byYear.get(cell.year) ?? [];
+    if (cell.value !== null) values.push(cell.value);
+    byYear.set(cell.year, values);
+  }
+  return [...byYear].map(([year, values]) => ({
+    year,
+    mean: values.length ? values.reduce((a, b) => a + b, 0) / values.length : null,
+    months: values.length,
+  }));
+}
+
 /**
  * The year whose months (at least 10 of them) are on average furthest above the normal,
  * leaving out `exportYear`, which is still in progress.
